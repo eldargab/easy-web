@@ -9,10 +9,14 @@
   "dependencies": {
     "easy-app": "*",
     "methods": "*",
-    "path-to-regexp": "*"
+    "path-to-regexp": "*",
+    "mime": "*",
+    "buffer-crc32": "*",
+    "fresh": "*"
   },
   "devDependencies": {
     "mocha": "*",
-    "should": "*"
+    "should": "*",
+    "supertest": "*"
   }
 }
