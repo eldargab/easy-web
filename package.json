@@ -1,6 +1,6 @@
 {
   "name": "easy-web",
-  "version": "0.0.0",
+  "version": "0.0.0alpha1",
   "author": "Eldar Gabdullin <eldargab@gmail.com>",
   "repository": {
     "type": "git",
@@ -12,7 +12,9 @@
     "path-to-regexp": "*",
     "mime": "*",
     "buffer-crc32": "*",
-    "fresh": "*"
+    "fresh": "*",
+    "qs": "*",
+    "connect": "*"
   },
   "devDependencies": {
     "mocha": "*",
