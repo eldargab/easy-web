@@ -1,3 +1,5 @@
-exports.module = require('./proto')
+var send = require('./send')
 
-exports.Send = require('./send')
+exports.Send = send.Send
+
+exports.send = send.fn

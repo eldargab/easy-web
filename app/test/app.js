@@ -1,14 +1,6 @@
 var should = require('should')
 var supertest = require('supertest')
 var App = require('..')
-var send = App.send
-var Action = App.Action
-
-function respond (app) {
-  app.routes(function () {
-    this.get('/', 'respond')
-  })
-}
 
 describe('App', function () {
   var app
@@ -21,10 +13,14 @@ describe('App', function () {
 
   beforeEach(function () {
     app = App()
+    app.routes(function () {
+      this.get('/', 'respond')
+    })
   })
 
   describe('When there is no routes setuped', function () {
     it('Should always repond with 404', function (done) {
+      app = App()
       request().expect(404, done)
     })
   })
@@ -33,37 +29,13 @@ describe('App', function () {
     app.def('respond', function (response) {
       response.end('Hello')
     })
-    .use(respond)
-
     request().expect(200, 'Hello', done)
-  })
-
-  it('Should dispatch tasks and actions recursively', function (done) {
-    app.def('respond', function (done) {
-      done(null, 'bar')
-    })
-    .def('bar', function () {
-      return 'baz'
-    })
-    .def('baz', function () {
-      return new Action('qux')
-    })
-    .def('qux', function (response) {
-      return function () {
-        response.end('hi')
-      }
-    })
-    .use(respond)
-
-    request().expect(200, 'hi', done)
   })
 
   it('Should catch task exceptions', function (done) {
     app.def('respond', function () {
       throw new Error('shit happened')
     })
-    .use(respond)
-
     request().expect(500, /shit/, done)
   })
 
@@ -71,45 +43,64 @@ describe('App', function () {
     app.def('respond', function (done) {
       done('shit happened')
     })
-    .use(respond)
-
     request().expect(500, /shit/, end)
   })
 
-  it('Should catch action exceptions', function (done) {
-    app.def('respond', function () {
-      return new Action('foo')
+  describe('http.send', function () {
+    beforeEach(function () {
+      app.alias('send', 'http.send')
     })
-    .def('foo', function () {
-      return function () {
-        throw new Error('action error')
-      }
+
+    it('send(body)', function (done) {
+      app.def('respond', function (send) {
+        send('hello')
+      })
+      request().expect(200, 'hello', done)
     })
-    .use(respond)
 
-    request().expect(500, /action error/, done)
-  })
-
-  it('Should catch async action errors', function (done) {
-    app.def('respond', function () {
-      return new Action('foo')
+    it('send(status)', function (done) {
+      app.def('respond', function (send) {
+        send(201)
+      })
+      request().expect(201, '', done)
     })
-    .def('foo', function () {
-      return function (cb) {
-        cb(new Error('action error'))
-      }
+
+    it('send(status, body)', function (done) {
+      app.def('respond', function (send) {
+        send(401, 'go away!')
+      })
+      request().expect(401, 'go away!', done)
     })
-    .use(respond)
 
-    request().expect(500, /action error/, done)
-  })
-
-  it('Http module should be installed', function (done) {
-    app.def('respond', function () {
-      return send('http is here')
+    it('send(status, type, body)', function (done) {
+      app.def('respond', function (send) {
+        send(401, 'text/plain', 'foo')
+      })
+      request()
+        .expect('Content-Type', 'text/plain')
+        .expect(401, 'foo', done)
     })
-    .use(respond)
 
-    request().expect(200, 'http is here', done)
+    it('send(json)', function (done) {
+       app.def('respond', function (send) {
+        send({foo: 'bar'})
+      })
+      request()
+        .expect('Content-Type', 'application/json')
+        .end(function (err, res) {
+          if (err) return done(err)
+          JSON.parse(res.text).should.eql({
+            foo: 'bar'
+          })
+          done()
+        })
+    })
+
+    it('send(buf)', function (done) {
+      app.def('respond', function (send) {
+        send(new Buffer('hey'))
+      })
+      request().expect('hey', done)
+    })
   })
 })

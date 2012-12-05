@@ -1,18 +1,10 @@
-var App = require('./app')
-var http = require('../http')
-var util = require('./util')
+var App = require('./proto')
 
 var exports = module.exports = function () {
-  return App.run().layer('app')
+  return App.run()
 }
 
-exports.Send = http.Send
+exports.Container = require('easy-app')
 
-exports.send = util.send
-
-exports.json = util.json
-
-exports.Action = util.Action
-
-exports.action = util.action
+exports.http = require('../http')
 
