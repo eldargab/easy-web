@@ -7,7 +7,7 @@
     "url": "git://github.com/eldargab/easy-web"
   },
   "dependencies": {
-    "easy-app": "*",
+    "easy-app": "git://github.com/eldargab/easy-app",
     "methods": "*",
     "path-to-regexp": "*",
     "mime": "*",
