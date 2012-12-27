@@ -7,7 +7,7 @@
     "url": "git://github.com/eldargab/easy-web"
   },
   "dependencies": {
-    "easy-app": "https://github.com/eldargab/easy-app/tarball/master",
+    "easy-app": "0.0.1alpha3",
     "methods": "*",
     "path-to-regexp": "*",
     "mime": "*",
