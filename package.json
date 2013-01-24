@@ -1,13 +1,13 @@
 {
   "name": "easy-web",
-  "version": "0.0.0alpha5",
+  "version": "0.0.0alpha6",
   "author": "Eldar Gabdullin <eldargab@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git://github.com/eldargab/easy-web"
   },
   "dependencies": {
-    "easy-app": "0.0.1alpha4",
+    "easy-app": "eldargab/easy-app",
     "methods": "*",
     "path-to-regexp": "*",
     "mime": "*",
