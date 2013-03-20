@@ -1,5 +1,5 @@
 test:
-	@mocha ./lib/*/test -R spec
+	@mocha ./lib/*/test
 
 test-http:
 	@mocha ./lib/http/test
