@@ -1,5 +1,5 @@
 var should = require('should')
-var Request = require('../request')
+var Request = require('..').http.Request
 
 describe('Request', function () {
   var req

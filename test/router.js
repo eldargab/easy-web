@@ -1,5 +1,5 @@
 var should = require('should')
-var Router = require('..')
+var Router = require('..').Router
 
 function Req (meth, path) {
   return {
