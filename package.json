@@ -8,11 +8,10 @@
   },
   "dependencies": {
     "easy-app": "eldargab/easy-app",
+    "http-send": "*",
     "methods": "*",
     "path-to-regexp": "*",
     "mime": "*",
-    "buffer-crc32": "*",
-    "fresh": "*",
     "qs": "*",
     "cookie": "*"
   },
