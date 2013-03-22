@@ -52,15 +52,9 @@ describe('Router', function () {
       dispatch('post', '/hello').should.equal('done')
     })
 
-    it('Should respect passed method', function () {
-      router.route('get', '/', 'get')
-      router.route('post', '/', 'post')
-      dispatch('post', '/').should.equal('post')
-    })
-
-    it('ALL should match any request', function () {
-      router.route('all', '/', 'foo')
-      dispatch('options', '/').should.equal('foo')
+    it('Should support regular route definition', function () {
+      router.route('get', '/hello', 'world')
+      dispatch('/hello').should.equal('world')
     })
   })
 
@@ -69,31 +63,34 @@ describe('Router', function () {
       router.at('/foo', 'bar').should.have.property('match').a('function')
     })
 
-    it('Should match only if path starts with prefix', function () {
-      var route = router.at('/hello/world')
-      route.match('/hello/world/app', {}).should.equal('404')
-      route.match('/foo', {}).should.be.false
-    })
+    describe('route', function () {
+      it('Should match only if path starts with `prefix`', function () {
+        var route = router.at('/hello/world')
+        route.match('/hello/world/app', {}).should.equal('404')
+        route.match('/foo', {}).should.be.false
+      })
 
-    it('Should dispatch matched request to a parent router', function () {
-      router.route('get', '/world', 'world')
-      router.at('/hello').match('/hello/world', {method: 'GET'}).should.equal('world')
-    })
+      it('Should dispatch matched request to a parent router', function () {
+        router.route('get', '/world', 'world')
+        router.at('/hello').match('/hello/world', {method: 'GET'})
+          .should.equal('world')
+      })
 
-    it('Should prefix task returned by a parent router with ns', function () {
-      router.route('get', '/world', 'world')
-      router.at('/hello', 'hello').match('/hello/world', {method: 'GET'})
-        .should.equal('hello_world')
-    })
+      it('Should prefix task returned by a parent router with `ns`', function () {
+        router.route('get', '/world', 'world')
+        router.at('/hello', 'hello').match('/hello/world', {method: 'GET'})
+          .should.equal('hello_world')
+      })
 
-    it('Should not prefix 404 task', function () {
-      router.at('/hello', 'hello').match('/hello/world', {method: 'GET'})
-        .should.equal('404')
-    })
+      it('Should not prefix 404 task', function () {
+        router.at('/hello', 'hello').match('/hello/world', {method: 'GET'})
+          .should.equal('404')
+      })
 
-    it('Should work with paths containing non-ASCII chars', function () {
-      router.at('/раз/два').match(encodeURI('/раз/два'), {method: 'GET'})
-        .should.equal('404')
+      it('Should work with paths containing non-ASCII chars', function () {
+        router.at('/раз/два').match(encodeURI('/раз/два'), {method: 'GET'})
+          .should.equal('404')
+      })
     })
   })
 })

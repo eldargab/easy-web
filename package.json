@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "easy-app": "eldargab/easy-app",
+    "escape-regexp": "*",
     "http-send": "*",
     "methods": "*",
-    "path-to-regexp": "*",
     "mime": "*",
     "qs": "*",
     "cookie": "*"
