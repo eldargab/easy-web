@@ -60,7 +60,7 @@ describe('App', function () {
   })
 
   describe('.at(path, ns, subapp | fn, aliases)', function () {
-    describe('If path does not contain slashs', function () {
+    describe('If path does not start with /', function () {
       it('Should work like .at(layer)', function () {
         app.at('app', function (app) {
           app.def('foo', function () {
