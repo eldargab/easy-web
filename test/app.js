@@ -38,24 +38,70 @@ describe('App', function () {
   })
 
   describe('.route()', function () {
-    it('Should accept route objects', function (done) {
-      app.route({
-        match: function (path, req) {
-          if (path == '/hello') return 'hello'
-        }
-      }, 'hello', function (res) {
-        res.send('hello').end()
+    function hello (req, res) {
+      var greeting = 'hello'
+      var whom = req.param('whom') || ''
+      if (whom) whom = ' ' + whom
+      res.send(greeting + whom).end()
+    }
+
+    function expect (body, done) {
+      request('/').expect(body, done)
+    }
+
+    function match (path) {
+      if (path == '/') return 'hello'
+    }
+
+    var opts = {
+      p: {
+        whom: 'world'
+      }
+    }
+
+    describe('Should accept route objects', function () {
+      it('route, task, def', function (done) {
+        app.route({
+          match: match
+        }, 'hello', hello)
+        expect('hello', done)
       })
-      request('/hello').expect('hello', done)
+
+      it('route', function (done) {
+        app.route({
+          match: match
+        }).def('hello', hello)
+        expect('hello', done)
+      })
     })
 
-    it('Should accept route functions', function (done) {
-      app.route(function (path, req) {
-        if (path == '/hello') return 'hello'
-      }).def('hello', function (res) {
-        res.send('hello').end()
+    describe('Should accept route functions', function () {
+      it('route, task, def', function (done) {
+        app.route(match, 'hello', hello)
+        expect('hello', done)
       })
-      request('/hello').expect('hello', done)
+
+      it('route', function (done) {
+        app.route(match).def('hello', hello)
+        expect('hello', done)
+      })
+    })
+
+    describe('Should accept regular route definitions', function () {
+      it('meth, path, task, def, opts', function (done) {
+        app.route('get', '/', 'hello', hello, opts)
+        expect('hello world', done)
+      })
+
+      it('meth, path, def, opts', function (done) {
+        app.route('get', '/', hello, opts)
+        expect('hello world', done)
+      })
+
+      it('meth, path, task, opts', function (done) {
+        app.route('get', '/', 'hello', opts).def('hello', hello)
+        expect('hello world', done)
+      })
     })
   })
 
