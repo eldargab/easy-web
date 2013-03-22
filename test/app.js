@@ -18,7 +18,7 @@ describe('App', function () {
   })
 
   describe('When there is no routes setuped', function () {
-    it('Should always respond with 404', function (done) {
+    it('Should respond with 404', function (done) {
       request().expect(404, done)
     })
   })
@@ -106,7 +106,7 @@ describe('App', function () {
   })
 
   describe('.at(path, ns, subapp | fn, aliases)', function () {
-    describe('If path does not start with /', function () {
+    describe('When given a path not starting with /', function () {
       it('Should work like .at(layer)', function () {
         app.at('app', function (app) {
           app.def('foo', function () {
@@ -120,7 +120,7 @@ describe('App', function () {
     })
 
     describe('When given a subapp', function () {
-      it('Should install it and it\'s routes', function (done) {
+      it('Should install subapp and it\'s routes', function (done) {
         var sub = App()
         sub.get('/world', function (res, greeting) {
           res.send(greeting).end()

@@ -33,7 +33,7 @@ describe('route', function () {
       route('/', 'foo', 'GET').match('/', req).should.equal('foo')
     })
 
-    it('Route for ALL should match request with any method', function () {
+    it('Route for ALL should match any request', function () {
       var r = route('/', 'foo', 'ALL')
       r.match('/', {method: 'POST'}).should.equal('foo')
       r.match('/', {method: 'GET'}).should.equal('foo')
