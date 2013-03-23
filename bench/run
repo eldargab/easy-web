@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+bench() {
+  ab -n 5000 -c 50 -k -q http://127.0.0.1:8000$1 \
+    | grep "Requests per" \
+    | cut -d ' ' -f 7 \
+    | xargs echo "$2:"
+}
+
+node_hello_bench() {
+  bench / "Node.js Hello World"
+}
+
+app_bench() {
+  bench / "Hello World"
+  bench /subapp/hello "Subapp"
+}
+
+with() {
+  local server="$1 &"
+  eval $server
+  local pid=$!
+  sleep .5
+  $2
+  kill $pid
+  sleep .5
+}
+
+with "node ./bench/node-hello.js" node_hello_bench
+with "node ./bench/app.js" app_bench
