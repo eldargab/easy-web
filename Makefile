@@ -1,4 +1,7 @@
 test:
 	@mocha
 
-.PHONY: test
+bench:
+	@bench/run
+
+.PHONY: test bench
