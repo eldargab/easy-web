@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 
 bench() {
-  wrk -t4 -c20 -r10000 http://127.0.0.1:8000$1 \
+  wrk -t4 -c30 -r50000 http://127.0.0.1:8000$1 \
     | grep "Requests/sec" \
     | cut -d ':' -f 2 \
     | xargs echo "$2:"
 }
 
-node_hello_bench() {
-  bench / "Node.js Hello World"
+pure_node() {
+  bench / "Node.js"
 }
 
-app_bench() {
-  bench / "Hello World"
+express() {
+  bench / "Express"
+}
+
+pure_http() {
+  bench / "pure http"
+}
+
+easy_web() {
+  bench / "EasyWeb"
   bench /subapp/hello "Subapp"
 }
 
@@ -25,5 +33,7 @@ with() {
   sleep .5
 }
 
-with node-hello.js node_hello_bench
-with app.js app_bench
+with node.js pure_node
+with pure-http.js pure_http
+with express.js express
+with easy-web.js easy_web
