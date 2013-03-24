@@ -7,11 +7,10 @@ app.get('/', function (res) {
 
 var subapp = App()
 
-subapp.def('/hello', function (res) {
+subapp.get('/hello', function (res) {
   res.send('Hello world').end()
 })
 
-app.at('/subapp', 'sub', subapp)
-app.alias('sub_res', 'res')
+app.at('/subapp', 'sub', subapp, {'res': '*'})
 
 app.createServer().listen(8000)
