@@ -20,5 +20,8 @@
     "should": "*",
     "supertest": "*",
     "express": "*"
+  },
+  "scripts": {
+    "test": "mocha -R spec"
   }
 }

@@ -77,4 +77,34 @@ describe('route', function () {
       req.params.should.have.property('b').equal('b')
     })
   })
+
+  describe('.url(task, params)', function () {
+    it('Should generate url if passed task equals route\'s task', function () {
+      var r = new Route('GET', '/foo/bar/', 'bar')
+      r.url('bar').should.equal('/foo/bar/')
+    })
+
+    it('Should return "undefined" if passed task does not equal route\'s task', function () {
+      var r = new Route('GET', '/foo/bar/', 'bar')
+      var url = r.url('foo')
+      should.not.exist(url)
+    })
+
+    it('Should encode params', function () {
+      var r = new Route('GET', '/a/{b}/{c}', 'a')
+      r.url('a', {
+        b: 'foo bar',
+        c: 'qux'
+      }).should.equal('/a/foo%20bar/qux')
+    })
+
+    it('Should mix default params', function () {
+      var r = new Route('GET', '/a/{b}/{c}', 'a', {
+        p: {
+          c: 'qux'
+        }
+      })
+      r.url('a', {b: 'foo'}).should.equal('/a/foo/qux')
+    })
+  })
 })
