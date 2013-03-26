@@ -200,4 +200,16 @@ describe('App', function () {
       })
     })
   })
+
+  describe('to(task, params)', function () {
+    it('Should return url for `task`', function (done) {
+      app.useweb()
+      app.get('/hello/{world}', 'hello')
+      app.eval('to', function (err, to) {
+        to('hello', {world: 'world'}).should.equal('/hello/world')
+        to('/hello', {world: 'world'}).should.equal('/hello/world')
+        done()
+      })
+    })
+  })
 })
