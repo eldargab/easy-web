@@ -125,7 +125,7 @@ describe('App', function () {
         sub.get('/world', function (res, greeting) {
           res.send(greeting).end()
         })
-        app.at('/hello', 'hello', sub, {'res': '*'})
+        app.at('/hello', 'hello', sub)
         app.set('hello_greeting', 'Hello world')
         request('/hello/world').expect('Hello world', done)
       })

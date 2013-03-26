@@ -11,6 +11,6 @@ subapp.get('/hello', function (res) {
   res.send('Hello world').end()
 })
 
-app.at('/subapp', 'sub', subapp, {'res': '*'})
+app.at('/subapp', 'sub', subapp, {'res': 'res'})
 
 app.createServer().listen(8000)
