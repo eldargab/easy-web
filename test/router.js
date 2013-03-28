@@ -78,9 +78,16 @@ describe('Router', function() {
       })
 
       it('Should not prefix 404 task', function() {
-        route('404')
         router.at('/hello', 'hello').match('/hello/world', req)
           .should.equal('404')
+      })
+
+      describe('Given a "/" prefix', function() {
+        it('Should not match if parent router returns 404', function() {
+          router.push(new Router().at('/'))
+          router.push({match: function() {return 'foo'}})
+          router.dispatch('/', {}).should.equal('foo')
+        })
       })
 
       it('Should work with paths containing non-ASCII chars', function() {
