@@ -41,16 +41,42 @@ describe('route', function() {
   })
 
   describe('Trailing slashes', function() {
-    it('/foo should match /foo/', function() {
-      route('/foo').match('/foo/', req).should.equal('yes')
+    describe('In default mode', function() {
+      it('/foo should match /foo/', function() {
+        route('/foo').match('/foo/', req).should.equal('yes')
+      })
+
+      it('/foo/ should match /foo/', function() {
+        route('/foo/').match('/foo/', req).should.equal('yes')
+      })
+
+      it('/foo/ should NOT match /foo', function() {
+        route('/foo/').match('/foo', req).should.be.false
+      })
+
+      it('/ should match empty path', function() {
+        route('/').match('', req).should.equal('yes')
+      })
     })
 
-    it('/foo/ should match /foo/', function() {
-      route('/foo/').match('/foo/', req).should.equal('yes')
-    })
+    describe('In strict mode', function() {
+      var o = {strict: true}
 
-    it('/foo/ should NOT match /foo', function() {
-      route('/foo/').match('/foo', req).should.be.false
+      it('/foo should NOT match /foo/', function() {
+        route('/foo', o).match('/foo/', req).should.be.false
+      })
+
+      it('/foo/ should match /foo/', function() {
+        route('/foo/', o).match('/foo/', req).should.equal('yes')
+      })
+
+      it('/foo/ should NOT match /foo', function() {
+        route('/foo/', o).match('/foo', req).should.be.false
+      })
+
+      it('/ should NOT match empty path', function() {
+        route('/', o).match('', req).should.be.false
+      })
     })
   })
 
