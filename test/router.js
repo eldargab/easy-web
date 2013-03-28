@@ -9,16 +9,10 @@ describe('Router', function() {
     req = {}
   })
 
-  function route(fn) {
-    router.push({
-      match: typeof fn == 'function' ? fn : function() {return fn}
-    })
-  }
-
   describe('.dispatch(path, req)', function() {
     it('Should return a task of the first matching route', function() {
-      route('first')
-      route('second')
+      router.push({match: function() {return 'first'}})
+      router.push({match: function() {return 'second'}})
       router.dispatch('/', req).should.equal('first')
     })
 
@@ -54,8 +48,8 @@ describe('Router', function() {
     describe('route', function() {
       it('Should match only if path starts with `prefix`', function() {
         var r = router.at('/hello/world')
-        r.match('/hello/world/app', {}).should.equal('404')
-        r.match('/foo', {}).should.be.false
+        r.match('/hello/world/app', req).should.equal('404')
+        r.match('/foo', req).should.be.false
       })
 
       it('Should ignore trailing slash in `prefix`', function() {
@@ -64,15 +58,13 @@ describe('Router', function() {
       })
 
       it('Should dispatch matched request to a parent router', function() {
-        route(function(p) {
-          return p
-        })
+        router.push({match: function(p) {return p}})
         router.at('/hello').match('/hello/world', req)
           .should.equal('/world')
       })
 
       it('Should prefix task returned by a parent router with `ns`', function() {
-        route('world')
+        router.push({match: function() {return 'world'}})
         router.at('/hello', 'hello').match('/hello/world', req)
           .should.equal('hello_world')
       })
@@ -86,7 +78,7 @@ describe('Router', function() {
         it('Should not match if parent router returns 404', function() {
           router.push(new Router().at('/'))
           router.push({match: function() {return 'foo'}})
-          router.dispatch('/', {}).should.equal('foo')
+          router.dispatch('/', req).should.equal('foo')
         })
       })
 
@@ -97,7 +89,7 @@ describe('Router', function() {
     })
 
     describe('.url(task, params)', function() {
-      it('Should return the url of the first matching route prefixed with `prefix`', function() {
+      it('Should return url of the first matching route prefixed with `prefix`', function() {
         router.push({
           url: function(task) {
             if (task == 'world') return '/world'
