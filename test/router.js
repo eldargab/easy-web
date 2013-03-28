@@ -58,6 +58,11 @@ describe('Router', function() {
         r.match('/foo', {}).should.be.false
       })
 
+      it('Should ignore trailing slash in `prefix`', function() {
+        router.at('/foo/bar/')
+          .match('/foo/bar').should.equal('404')
+      })
+
       it('Should dispatch matched request to a parent router', function() {
         route(function(p) {
           return p
