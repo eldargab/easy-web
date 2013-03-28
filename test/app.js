@@ -211,5 +211,44 @@ describe('App', function() {
         done()
       })
     })
+
+    it('Should work for subapp', function(done) {
+      var sub = App()
+      sub.get('/foo/{param}', 'foo')
+      sub.def('url', function(to) {
+        return to('foo', {param: 'bar'})
+      })
+      sub.def('helloUrl', function(to) {
+        return to('/hello', {world: 'world'})
+      })
+
+      app.useweb()
+      app.get('/hello/{world}', 'hello')
+      app.at('/sub', 'sub', sub)
+
+      app.eval('sub_url', function(err, url) {
+        url.should.equal('/sub/foo/bar')
+        app.eval('sub_helloUrl', function(err, url) {
+          url.should.equal('/hello/world')
+          done()
+        })
+      })
+    })
+
+    it('Should work for deep subapp', function(done) {
+      var sub = App()
+      sub.get('/foo/{param}', 'foo')
+      sub.def('url', function(to) {
+        return to('foo', {param: 'bar'})
+      })
+
+      app.useweb()
+      app.at('/1', 'l1', App().at('/2', 'l2', sub))
+
+      app.eval('l1_l2_url', function(err, url) {
+        url.should.equal('/1/2/foo/bar')
+        done()
+      })
+    })
   })
 })
