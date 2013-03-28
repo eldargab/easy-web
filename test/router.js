@@ -1,5 +1,5 @@
 var should = require('should')
-var Router = require('..').Router
+var Router = require('../lib/router')
 
 describe('Router', function() {
   var router, req

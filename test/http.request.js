@@ -1,11 +1,11 @@
 var should = require('should')
-var Request = require('..').http.Request
+var proto = require('../lib/http/request')
 
 describe('Request', function() {
   var req
 
   beforeEach(function() {
-    req = Object.create(Request)
+    req = Object.create(proto)
     req.headers = {}
   })
 

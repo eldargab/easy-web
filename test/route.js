@@ -1,5 +1,5 @@
 var should = require('should')
-var Route = require('..').Route
+var Route = require('../lib/router/route')
 
 function route(path, task, meth) {
   var opts = arguments[arguments.length - 1]
