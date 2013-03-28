@@ -9,7 +9,7 @@ var router = new Router
 
 router.push(new Route('GET', '/', 'hello'))
 
-http.createServer(function (req, res) {
+http.createServer(function(req, res) {
   req.__proto__ = request
 
   router.dispatch(req.path, req)

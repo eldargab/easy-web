@@ -1,13 +1,13 @@
 var App = require('..')
 var app = App()
 
-app.get('/', function (res) {
+app.get('/', function(res) {
   res.send('Hello world').end()
 })
 
 var subapp = App()
 
-subapp.get('/hello', function (res) {
+subapp.get('/hello', function(res) {
   res.send('Hello world').end()
 })
 
