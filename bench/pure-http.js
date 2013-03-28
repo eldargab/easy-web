@@ -1,9 +1,8 @@
-var App = require('..')
 var http = require('http')
-var request = App.http.Request
-var send = App.http.send
-var Router = App.Router
-var Route = App.Route
+var send = require('http-send')
+var request = require('../lib/http/request')
+var Router = require('../lib/router')
+var Route = require('../lib/router/route')
 
 var router = new Router
 
