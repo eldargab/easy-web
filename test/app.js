@@ -212,30 +212,47 @@ describe('App', function() {
       })
     })
 
-    it('Should work for subapp', function(done) {
-      var sub = App()
-      sub.get('/foo/{param}', 'foo')
-      sub.def('url', function(to) {
-        return to('foo', {param: 'bar'})
-      })
-      sub.def('helloUrl', function(to) {
-        return to('/hello', {world: 'world'})
+    describe('Within subapp', function() {
+      describe('Given a task without leading `/`', function() {
+        it('Should resolve task relative to subapp namespace', function(done) {
+          var sub = App()
+          sub.get('/foo/{param}', 'foo')
+          sub.def('url', function(to) {
+            return to('foo', {param: 'bar'})
+          })
+
+          app.get('/foo', 'foo')
+          app.at('/sub', 'sub', sub)
+          app.useweb()
+
+          app.eval('sub_url', function(err, url) {
+            url.should.equal('/sub/foo/bar')
+            done()
+          })
+        })
       })
 
-      app.useweb()
-      app.get('/hello/{world}', 'hello')
-      app.at('/sub', 'sub', sub)
+      describe('Given a task with leading `/`', function() {
+        it('Should resolve task in a global namespace', function(done) {
+          var sub = App()
+          sub.get('/hello', 'foo')
+          sub.def('url', function(to) {
+            return to('/foo', {param: 'bar'})
+          })
 
-      app.eval('sub_url', function(err, url) {
-        url.should.equal('/sub/foo/bar')
-        app.eval('sub_helloUrl', function(err, url) {
-          url.should.equal('/hello/world')
-          done()
+          app.at('/sub', 'sub', sub)
+          app.get('/foo/{param}', 'foo')
+          app.useweb()
+
+          app.eval('sub_url', function(err, url) {
+            url.should.equal('/foo/bar')
+            done()
+          })
         })
       })
     })
 
-    it('Should work for deep subapp', function(done) {
+    it('Should work within deep subapp', function(done) {
       var sub = App()
       sub.get('/foo/{param}', 'foo')
       sub.def('url', function(to) {
@@ -243,6 +260,7 @@ describe('App', function() {
       })
 
       app.useweb()
+      app.get('/foo', 'foo')
       app.at('/1', 'l1', App().at('/2', 'l2', sub))
 
       app.eval('l1_l2_url', function(err, url) {
