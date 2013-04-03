@@ -348,25 +348,92 @@ describe('App', function() {
       })
     })
 
-    it('Should support json bodies', function(done) {
-      app.get('/', function(send) {
-        send({foo: 'bar'})
+    describe('send(status, type, body)', function() {
+      it('Should set status, Content-Type and send body', function(done) {
+        app.get('/', function(send) {
+          send(201, 'foo/bar', 'hello')
+        })
+        request('/')
+          .expect('Content-Type', 'foo/bar')
+          .expect(201, 'hello', done)
       })
-      request('/')
-        .expect(200)
-        .expect('Content-Type', 'application/json')
-        .expect({foo: 'bar'}, done)
     })
 
-    it('Should catch json serialization errors', function(done) {
-      app.doNotLogErrors = true
-      app.get('/', function(send) {
-        var obj = {}
-        obj.self = obj
-        send(obj)
+    describe('send(status, type, body, cb)', function() {
+      it('Should set status, Content-Type, body and delegate response to callback', function(done) {
+        app.get('/', function(send) {
+          send(201, 'foo/bar','hello', function(res) {
+            res.statusCode.should.equal(201)
+            res.body.should.equal('hello')
+            res.type().should.equal('foo/bar')
+            res.send('foo')
+            res.end()
+          })
+        })
+        request('/')
+          .expect('Content-Type', 'foo/bar')
+          .expect(201, 'foo', done)
       })
-      request('/')
-        .expect(500, /circular/, done)
+    })
+
+    describe('send(type, body)', function() {
+      it('Should set Content-Type and send body', function(done) {
+        app.get('/', function(send) {
+          send('foo/bar', 'hello')
+        })
+        request('/')
+          .expect('Content-Type', 'foo/bar')
+          .expect(200, 'hello', done)
+      })
+    })
+
+    describe('send(type, body, cb)', function() {
+      it('Should set Content-Type, body and delegate response to callback', function(done) {
+        app.get('/', function(send) {
+          send('foo/bar','hello', function(res) {
+            res.body.should.equal('hello')
+            res.type().should.equal('foo/bar')
+            res.send('foo')
+            res.end()
+          })
+        })
+        request('/')
+          .expect('Content-Type', 'foo/bar')
+          .expect(200, 'foo', done)
+      })
+    })
+
+    describe('Given a json body', function() {
+      it('Should send json', function(done) {
+        app.get('/', function(send) {
+          send({foo: 'bar'})
+        })
+        request('/')
+          .expect(200)
+          .expect('Content-Type', 'application/json')
+          .expect({foo: 'bar'}, done)
+      })
+
+      it('Should catch serialization errors', function(done) {
+        app.doNotLogErrors = true
+        app.get('/', function(send) {
+          var obj = {}
+          obj.self = obj
+          send(obj)
+        })
+        request('/')
+          .expect(500, /circular/, done)
+      })
+
+      it('Should not override Content-Type', function(done) {
+        app.get('/', function(send) {
+          send('text/x-json', {foo: 'bar'})
+        })
+        request('/')
+          .expect(200)
+          .expect('Content-Type', 'text/x-json')
+          .expect(/bar/, done)
+      })
     })
   })
 
