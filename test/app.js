@@ -347,6 +347,27 @@ describe('App', function() {
         request('/').expect(201, 'foo', done)
       })
     })
+
+    it('Should support json bodies', function(done) {
+      app.get('/', function(send) {
+        send({foo: 'bar'})
+      })
+      request('/')
+        .expect(200)
+        .expect('Content-Type', 'application/json')
+        .expect({foo: 'bar'}, done)
+    })
+
+    it('Should catch json serialization errors', function(done) {
+      app.doNotLogErrors = true
+      app.get('/', function(send) {
+        var obj = {}
+        obj.self = obj
+        send(obj)
+      })
+      request('/')
+        .expect(500, /circular/, done)
+    })
   })
 
   describe('redirect', function() {
