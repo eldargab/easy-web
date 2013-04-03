@@ -24,13 +24,14 @@ describe('App', function() {
   })
 
   it('Should dispatch tasks', function(done) {
-    app.get('/', function(res) {
-      res.send('Hello').end()
+    app.get('/', function(send) {
+      send('Hello')
     })
     request().expect(200, 'Hello', done)
   })
 
   it('Should respond with 500 on error', function(done) {
+    app.doNotLogErrors = true
     app.get('/', function() {
       throw new Error('shit happened')
     })
@@ -38,11 +39,11 @@ describe('App', function() {
   })
 
   describe('.route()', function() {
-    function hello(req, res) {
+    function hello(req, send) {
       var greeting = 'hello'
       var whom = req.param('whom') || ''
       if (whom) whom = ' ' + whom
-      res.send(greeting + whom).end()
+      send(greeting + whom)
     }
 
     function expect(body, done) {
@@ -122,8 +123,8 @@ describe('App', function() {
     describe('When given a subapp', function() {
       it('Should install subapp and it\'s routes', function(done) {
         var sub = App()
-        sub.get('/world', function(res, greeting) {
-          res.send(greeting).end()
+        sub.get('/world', function(send, greeting) {
+          send(greeting)
         })
         app.at('/hello', 'hello', sub)
         app.set('hello_greeting', 'Hello world')
@@ -132,8 +133,8 @@ describe('App', function() {
 
       it('Should allow namespace omission', function(done) {
         var sub = App()
-        sub.get('/world', function(res, greeting) {
-          res.send(greeting).end()
+        sub.get('/world', function(send, greeting) {
+          send(greeting)
         })
         app.at('/hello', sub)
         app.set('greeting', 'Hello world')
@@ -146,8 +147,8 @@ describe('App', function() {
         app.at('/foo', function(app) {
           app.get('/bar', 'bar')
         })
-        app.def('bar', function(res) {
-          res.send('bar').end()
+        app.def('bar', function(send) {
+          send('bar')
         })
         request('/foo/bar').expect(200, 'bar', function(err) {
           if (err) return done(err)
@@ -159,16 +160,16 @@ describe('App', function() {
         app.at('/foo', 'foo', function(app) {
           app.get('/bar', 'bar')
         })
-        app.def('foo_bar', function(res) {
-          res.send('bar').end()
+        app.def('foo_bar', function(send) {
+          send('bar')
         })
         request('/foo/bar').expect(200, 'bar', done)
       })
 
       it('Should support inline task definition', function(done) {
         app.at('/foo', 'foo', function(app) {
-          app.get('/bar', function(res) { // note we are in global namespace
-            res.send('bar').end()
+          app.get('/bar', function(send) { // note we are in global namespace
+            send('bar')
           })
         })
         request('/foo/bar').expect(200, 'bar', done)
@@ -177,8 +178,8 @@ describe('App', function() {
       describe('Should support nesting', function() {
         it('subapp case', function(done) {
           var sub = App()
-          sub.get('/qux', function(res) {
-            res.send('qux').end()
+          sub.get('/qux', function(send) {
+            send('qux')
           })
           app.at('/foo', 'foo', function(app) {
             app.at('/bar', 'bar', sub)
@@ -190,8 +191,8 @@ describe('App', function() {
         it('function case', function(done) {
           app.at('/foo', 'foo', function(app) {
             app.at('/bar', 'bar', function(app) {
-              app.get('/qux', function(res) {
-                res.send('qux').end()
+              app.get('/qux', function(send) {
+                send('qux')
               })
             })
           })
@@ -266,6 +267,155 @@ describe('App', function() {
       app.eval('l1_l2_url', function(err, url) {
         url.should.equal('/1/2/foo/bar')
         done()
+      })
+    })
+  })
+
+  describe('send', function() {
+    describe('send(code)', function() {
+      it('Should set status and send response', function(done) {
+        app.get('/', function(send) {
+          send(201)
+        })
+        request('/').expect(201, done)
+      })
+    })
+
+    describe('send(code, cb)', function() {
+      it('Should set status and delegate response to callback', function(done) {
+        app.get('/', function(send) {
+          send(302, function(res) {
+            res.statusCode.should.equal(302)
+            res.send('redirect')
+            res.end()
+          })
+        })
+        request('/').expect(302, 'redirect', done)
+      })
+    })
+
+    describe('send(404)', function() {
+      it('Should mean "send general app level 404 response"', function(done) {
+        app.get('/', function(send) {
+          send(404)
+        })
+        request('/').expect(404, /Cannot GET/, done)
+      })
+    })
+
+    describe('send(body)', function() {
+      it('Should send `body`', function(done) {
+        app.get('/', function(send) {
+          send('hello')
+        })
+        request('/').expect(200, 'hello', done)
+      })
+    })
+
+    describe('send(body, cb)', function() {
+      it('Should set body and delegate response to callback', function(done) {
+        app.get('/', function(send) {
+          send('hello', function(res) {
+            res.body.should.equal('hello')
+            res.send('foo')
+            res.end()
+          })
+        })
+        request('/').expect('foo', done)
+      })
+    })
+
+    describe('send(status, body)', function() {
+      it('Should set status and send `body`', function(done) {
+        app.get('/', function(send) {
+          send(201, 'hello')
+        })
+        request('/').expect(201, 'hello', done)
+      })
+    })
+
+    describe('send(status, body, cb)', function() {
+      it('Should set status, body and delegate response to callback', function(done) {
+        app.get('/', function(send) {
+          send(201, 'hello', function(res) {
+            res.statusCode.should.equal(201)
+            res.body.should.equal('hello')
+            res.send('foo')
+            res.end()
+          })
+        })
+        request('/').expect(201, 'foo', done)
+      })
+    })
+  })
+
+  describe('redirect', function() {
+    describe('redirect(url)', function() {
+      it('Should redirect to `url`', function(done) {
+        app.get('/', function(redirect) {
+          redirect('http://example.com/')
+        })
+        request('/')
+          .expect(302)
+          .expect('Location', 'http://example.com/')
+          .expect('302 Moved Temporarily. Redirecting to http://example.com/', done)
+      })
+    })
+
+    describe('redirect("back")', function() {
+      it('Should should mean "redirect to Referer"', function(done) {
+        app.get('/', function(redirect) {
+          redirect('back')
+        })
+        request('/')
+          .set('Referer', 'http://example.com/')
+          .expect('Location', 'http://example.com/')
+          .expect(302, done)
+      })
+    })
+
+    describe('redirect(url, cb)', function() {
+      it('Should prepare response for redirection and delegate it to callback', function(done) {
+        app.get('/', function(redirect) {
+          redirect('http://example.com/', function(res) {
+            res.statusCode.should.equal(302)
+            res.get('Location').should.equal('http://example.com/')
+            res.send('foo')
+            res.end()
+          })
+        })
+        request('/')
+          .expect(302)
+          .expect('Location', 'http://example.com/')
+          .expect('foo', done)
+      })
+    })
+
+    describe('redirect(status, url)', function() {
+      it('Should redirect with passed status', function(done) {
+        app.get('/', function(redirect) {
+          redirect(303, '/foo/bar')
+        })
+        request('/')
+          .expect('Location', '/foo/bar')
+          .expect(303, done)
+      })
+    })
+
+    describe('redirect(status, url, cb)', function() {
+      it('Should prepare response for redirection and delegate it to callback', function(done) {
+        app.get('/', function(redirect) {
+          redirect(303, 'http://example.com/', function(res) {
+            res.statusCode.should.equal(303)
+            res.get('Location').should.equal('http://example.com/')
+            res.send('foo')
+            res.end()
+          })
+        })
+        request('/')
+          .expect(303)
+          .expect('Location', 'http://example.com/')
+          .expect('foo', done)
       })
     })
   })
