@@ -9,7 +9,8 @@
   "dependencies": {
     "easy-app": "eldargab/easy-app",
     "escape-regexp": "*",
-    "http-send": "*",
+    "fresh": "*",
+    "buffer-crc32": "*",
     "methods": "*",
     "mime": "*",
     "qs": "*",

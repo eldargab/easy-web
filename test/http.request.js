@@ -1,7 +1,7 @@
 var should = require('should')
 var proto = require('../lib/http/request')
 
-describe('Request', function() {
+describe('http.request', function() {
   var req
 
   beforeEach(function() {

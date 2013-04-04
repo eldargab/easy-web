@@ -1,6 +1,6 @@
 var http = require('http')
-var send = require('http-send')
 var request = require('../lib/http/request')
+var Response = require('../lib/http/response')
 var Router = require('../lib/router')
 var Route = require('../lib/router/route')
 
@@ -13,5 +13,5 @@ http.createServer(function(req, res) {
 
   router.dispatch(req.path, req)
 
-  send(req, res, 'Hello world')
+  new Response(req, res).send('Hello world').end()
 }).listen(8000)
