@@ -435,6 +435,42 @@ describe('App', function() {
           .expect(/bar/, done)
       })
     })
+
+    describe('Given a string body', function() {
+      it('Should default Content-Type to text/html', function(done) {
+        app.get('/', function(send) {
+          send('hello')
+        })
+        request('/')
+          .expect('Content-Type', 'text/html', done)
+      })
+
+      it('Should set ETag for large bodies if status is 2xx', function(done) {
+        app.get('/', function(send) {
+          send(Array(1024 * 2).join('-'))
+        })
+        request('/')
+          .expect('ETag', '"-1498647312"', done)
+      })
+    })
+
+    describe('Given a buffer body', function() {
+      it('Should default Content-Type to application/octet-stream', function(done) {
+        app.get('/', function(send) {
+          send(new Buffer('hello'))
+        })
+        request('/')
+          .expect('Content-Type', 'application/octet-stream', done)
+      })
+
+      it('Should set ETag for large bodies if status is 2xx', function(done) {
+        app.get('/', function(send) {
+          send(new Buffer(Array(1024 * 2).join('-')))
+        })
+        request('/')
+          .expect('ETag', '"-1498647312"', done)
+      })
+    })
   })
 
   describe('redirect', function() {
