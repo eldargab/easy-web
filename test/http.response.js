@@ -35,12 +35,9 @@ describe('http.Response', function () {
     it('Should accept streams', function (done) {
       var stream = fs.createReadStream(__filename)
       request(function (req, res) {
-        stream.on('error', done)
         new Response(req, res)
           .send(stream)
-          .end(function() {
-            stream.destroy()
-          })
+          .end()
       })
       .get('/')
       .expect(200, /Should accept streams/, done)
