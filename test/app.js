@@ -444,14 +444,6 @@ describe('App', function() {
         request('/')
           .expect('Content-Type', 'text/html', done)
       })
-
-      it('Should set ETag for large bodies if status is 2xx', function(done) {
-        app.get('/', function(send) {
-          send(Array(1024 * 2).join('-'))
-        })
-        request('/')
-          .expect('ETag', '"-1498647312"', done)
-      })
     })
 
     describe('Given a buffer body', function() {
@@ -461,14 +453,6 @@ describe('App', function() {
         })
         request('/')
           .expect('Content-Type', 'application/octet-stream', done)
-      })
-
-      it('Should set ETag for large bodies if status is 2xx', function(done) {
-        app.get('/', function(send) {
-          send(new Buffer(Array(1024 * 2).join('-')))
-        })
-        request('/')
-          .expect('ETag', '"-1498647312"', done)
       })
     })
   })
