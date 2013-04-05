@@ -431,7 +431,7 @@ describe('App', function() {
         })
         request('/')
           .expect(200)
-          .expect('Content-Type', 'text/x-json')
+          .expect('Content-Type', 'text/x-json; charset=UTF-8')
           .expect(/bar/, done)
       })
     })
@@ -442,7 +442,7 @@ describe('App', function() {
           send('hello')
         })
         request('/')
-          .expect('Content-Type', 'text/html', done)
+          .expect('Content-Type', 'text/html; charset=UTF-8', done)
       })
     })
 
