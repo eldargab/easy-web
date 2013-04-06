@@ -37,7 +37,9 @@ describe('http.Response', function () {
       request(function (req, res) {
         new Response(req, res)
           .send(stream)
-          .end()
+          .end(function() {
+            stream.destroy()
+          })
       })
       .get('/')
       .expect(200, /Should accept streams/, done)
