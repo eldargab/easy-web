@@ -204,7 +204,7 @@ describe('App', function() {
 
   describe('to(task, params)', function() {
     it('Should return url for `task`', function(done) {
-      app.useweb()
+      app.useWeb()
       app.get('/hello/{world}', 'hello')
       app.eval('to', function(err, to) {
         to('hello', {world: 'world'}).should.equal('/hello/world')
@@ -224,7 +224,7 @@ describe('App', function() {
 
           app.get('/foo', 'foo')
           app.at('/sub', 'sub', sub)
-          app.useweb()
+          app.useWeb()
 
           app.eval('sub_url', function(err, url) {
             url.should.equal('/sub/foo/bar')
@@ -243,7 +243,7 @@ describe('App', function() {
 
           app.at('/sub', 'sub', sub)
           app.get('/foo/{param}', 'foo')
-          app.useweb()
+          app.useWeb()
 
           app.eval('sub_url', function(err, url) {
             url.should.equal('/foo/bar')
@@ -260,7 +260,7 @@ describe('App', function() {
         return to('foo', {param: 'bar'})
       })
 
-      app.useweb()
+      app.useWeb()
       app.get('/foo', 'foo')
       app.at('/1', 'l1', App().at('/2', 'l2', sub))
 
@@ -291,15 +291,6 @@ describe('App', function() {
           })
         })
         request('/').expect(302, 'redirect', done)
-      })
-    })
-
-    describe('send(404)', function() {
-      it('Should mean "send general app level 404 response"', function(done) {
-        app.get('/', function(send) {
-          send(404)
-        })
-        request('/').expect(404, /Cannot GET/, done)
       })
     })
 
@@ -404,7 +395,7 @@ describe('App', function() {
     })
 
     describe('Given a json body', function() {
-      it('Should send json', function(done) {
+      it('Should send a json', function(done) {
         app.get('/', function(send) {
           send({foo: 'bar'})
         })

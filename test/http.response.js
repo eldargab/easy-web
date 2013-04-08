@@ -46,6 +46,21 @@ describe('http.Response', function () {
     })
   })
 
+  describe('Should set Content-Length', function() {
+    it('for strings', function(done) {
+      res.send('раз два')
+      request().get('/')
+        .expect('Content-Length', '13')
+        .expect('раз два', done)
+    })
+
+    it('for buffers', function(done) {
+      res.send(new Buffer([1, 2]))
+      request().get('/')
+        .expect('Content-Length', '2', done)
+    })
+  })
+
   it('Should default Content-Type to application/octet-stream', function(done) {
     res.send('hello')
     request().get('/')

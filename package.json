@@ -10,7 +10,6 @@
     "easy-app": "eldargab/easy-app",
     "escape-regexp": "*",
     "fresh": "*",
-    "buffer-crc32": "*",
     "methods": "*",
     "mime": "*",
     "qs": "*",
