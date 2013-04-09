@@ -7,33 +7,38 @@ bench() {
     | xargs echo "$2:"
 }
 
-pure_node() {
-  bench / "Node.js"
-}
-
-express() {
-  bench / "Express"
-}
-
-pure_http() {
-  bench / "pure http"
-}
-
-easy_web() {
-  bench / "EasyWeb"
-  bench /subapp/hello "Subapp"
-}
-
 with() {
   node ./bench/$1 &
   local pid=$!
-  sleep .5
+  sleep .2
   $2
   kill $pid
-  sleep .5
+  sleep .2
 }
 
-with node.js pure_node
-with pure-http.js pure_http
-with express.js express
+echo
+echo Hello world servers
+echo
+
+with node.js "bench / Node.js"
+with pure-http.js "bench / Http"
+with express.js "bench / Express"
+with easy-web.js "bench / EasyWeb"
+
+echo
+echo EasyWeb
+echo
+
+easy_web() {
+  bench / "Hello world"
+  bench /just-set-immediate "Just setImmediate()"
+  bench /one-async-task "One async task"
+  bench /async-computation "Async computation"
+  bench /sync-computation "Sync computation"
+  bench /subapp/hello "Subapp"
+}
+
 with easy-web.js easy_web
+
+echo
+
