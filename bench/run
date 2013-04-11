@@ -17,15 +17,6 @@ with() {
 }
 
 echo
-echo Hello world servers
-echo
-
-with node.js "bench / Node.js"
-with pure-http.js "bench / Http"
-with express.js "bench / Express"
-with easy-web.js "bench / EasyWeb"
-
-echo
 echo EasyWeb
 echo
 
@@ -39,6 +30,14 @@ easy_web() {
 }
 
 with easy-web.js easy_web
+
+echo
+echo Other Hello world servers
+echo
+
+with node.js "bench / Node.js"
+with pure-http.js "bench / Http"
+with express.js "bench / Express"
 
 echo
 
