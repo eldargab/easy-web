@@ -55,6 +55,11 @@ describe('Router', function() {
       router.route({url: function() { return 'a'}})
       router.getUrlFor('a').should.equal('a')
     })
+
+    it('Should treat empty url as a successful match', function() {
+      router.at('/foo', Router().route({url: function() {return ''}}))
+      router.getUrlFor('bar').should.equal('/foo')
+    })
   })
 
   describe('.at(prefix, [ns], router)', function() {
