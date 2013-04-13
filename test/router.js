@@ -49,6 +49,12 @@ describe('Router', function() {
       })
       router.getUrlFor('foo', {bar: 'bar'}).should.equal('/foo/bar')
     })
+
+    it('Should safely skip routes without `.url()` method', function() {
+      router.route({})
+      router.route({url: function() { return 'a'}})
+      router.getUrlFor('a').should.equal('a')
+    })
   })
 
   describe('.at(prefix, [ns], router)', function() {
