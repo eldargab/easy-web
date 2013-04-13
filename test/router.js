@@ -5,31 +5,42 @@ describe('Router', function() {
   var router, req
 
   beforeEach(function() {
-    router = new Router
+    router = Router()
     req = {}
   })
 
   describe('.dispatch(path, req)', function() {
     it('Should return a task of the first matching route', function() {
-      router.push({match: function() {return 'first'}})
-      router.push({match: function() {return 'second'}})
+      router.route({match: function() {return 'first'}})
+      router.route({match: function() {return 'second'}})
       router.dispatch('/', req).should.equal('first')
     })
 
     it('Should return 404 if no route matched', function() {
       router.dispatch('/', req).should.equal('404')
     })
+
+    it('Should pass `path` and `req` to route.match()', function() {
+      router.route({
+        match: function(p, _req) {
+          p.should.equal('/hello')
+          _req.should.equal(req)
+          return 'hello'
+        }
+      })
+      .dispatch('/hello', req).should.equal('hello')
+    })
   })
 
   describe('.getUrlFor(task, params)', function() {
     it('Should return the url of the first matching route', function() {
-      router.push({url: function() { return 'a'}})
-      router.push({url: function() { return 'b'}})
+      router.route({url: function() { return 'a'}})
+      router.route({url: function() { return 'b'}})
       router.getUrlFor('task').should.equal('a')
     })
 
     it('Should pass task name and params to route.url()', function() {
-      router.push({
+      router.route({
         url: function(task, params) {
           task.should.equal('foo')
           params.bar.should.equal('bar')
@@ -40,63 +51,95 @@ describe('Router', function() {
     })
   })
 
-  describe('.at(prefix, ns)', function() {
-    it('Should return a route', function() {
-      router.at('/foo', 'bar').should.have.property('match').a('function')
-    })
+  describe('.at(prefix, [ns], router)', function() {
+    describe('Should create a route which...', function() {
+      describe('In a case of dispatching...', function() {
+        describe('Given a path starting with `prefix`...', function() {
+          it('Should return dispatch result from the `router`', function() {
+            router.at('/hello', Router().route({match: function() {return 'a'}}))
+              .dispatch('/hello', req).should.equal('a')
+          })
 
-    describe('route', function() {
-      it('Should match only if path starts with `prefix`', function() {
-        var r = router.at('/hello/world')
-        r.match('/hello/world/app', req).should.equal('404')
-        r.match('/foo', req).should.be.false
-      })
+          it('Should pass to the `router` trimed path without prefix', function() {
+            var subrouter = Router()
+            subrouter.route({
+              match: function(p) {
+                if (p == '/foo') return 'foo'
+              }
+            })
+            router.at('/hello', subrouter)
+              .dispatch('/hello/foo').should.equal('foo')
+          })
 
-      it('Should ignore trailing slash in `prefix`', function() {
-        router.at('/foo/bar/')
-          .match('/foo/bar').should.equal('404')
-      })
+          describe('Given a "/" prefix', function() {
+            it('Should not match if the `router` returns 404', function() {
+              router.at('/', Router())
+              router.route({match: function() {return 'a'}})
+              router.dispatch('/', req).should.equal('a')
+            })
+          })
 
-      it('Should dispatch matched request to a parent router', function() {
-        router.push({match: function(p) {return p}})
-        router.at('/hello').match('/hello/world', req)
-          .should.equal('/world')
-      })
+          describe('Given a namespace...', function() {
+            it('Should return result prefixed with `ns`', function() {
+              router.at('/hello', 'hello', Router().route({match: function() {return 'a'}}))
+                .dispatch('/hello/world', req).should.equal('hello_a')
+            })
 
-      it('Should prefix task returned by a parent router with `ns`', function() {
-        router.push({match: function() {return 'world'}})
-        router.at('/hello', 'hello').match('/hello/world', req)
-          .should.equal('hello_world')
-      })
+            it('But should not prefix 404 task', function() {
+              router.at('/hello', 'hello', Router())
+                .dispatch('/hello/world', req).should.equal('404')
+            })
+          })
+        })
 
-      it('Should not prefix 404 task', function() {
-        router.at('/hello', 'hello').match('/hello/world', req)
-          .should.equal('404')
-      })
-
-      describe('Given a "/" prefix', function() {
-        it('Should not match if parent router returns 404', function() {
-          router.push(new Router().at('/'))
-          router.push({match: function() {return 'foo'}})
-          router.dispatch('/', req).should.equal('foo')
+        describe('Given a path not starting with `prefix`', function() {
+          it('Should not match', function() {
+            router.at('/hello', Router().route({match: function() {return 'a'}}))
+            router.route({match: function() {return 'b'}})
+            router.dispatch('/foo', req).should.equal('b')
+          })
         })
       })
 
-      it('Should work with paths containing non-ASCII chars', function() {
-        router.at('/раз/два').match(encodeURI('/раз/два'), req)
-          .should.equal('404')
+      describe('In a case of url generation...', function() {
+        it('Should return url generated by the `router` prefixed with `prefix`', function() {
+          var subrouter = Router()
+          subrouter.route({
+            url: function(task, params) {
+              task.should.equal('foo')
+              params.should.eql({
+                foo: 'bar'
+              })
+              return '/foo/bar'
+            }
+          })
+          router.at('/hello', 'hello', subrouter)
+            .getUrlFor('hello_foo', {foo: 'bar'}).should.equal('/hello/foo/bar')
+        })
       })
     })
 
-    describe('.url(task, params)', function() {
-      it('Should return url of the first matching route prefixed with `prefix`', function() {
-        router.push({
-          url: function(task) {
-            if (task == 'world') return '/world'
-          }
-        })
-        router.at('/hello', 'hello')
-          .url('hello_world').should.equal('/hello/world')
+    it('Should ignore trailing slash in `prefix`', function() {
+      router.at('/foo/bar/', Router().route({match: function() {return 'a'}}))
+        .dispatch('/foo/bar', req).should.equal('a')
+    })
+
+    it('Should work with paths containing non-ASCII chars', function() {
+      router.at('/раз/два', Router().route({match: function() {return 'a'}}))
+        .dispatch(encodeURI('/раз/два'), req).should.equal('a')
+    })
+  })
+
+  describe('.meth(path, task, opts)', function() {
+    it('Should define a route for `meth`', function() {
+      req = {method: 'POST', path: '/hello/world'}
+
+      router.post('/hello/{who}', 'hello', {p: {foo: 'bar'}})
+        .dispatch(req.path, req).should.equal('hello')
+
+      req.params.should.eql({
+        who: 'world',
+        foo: 'bar'
       })
     })
   })

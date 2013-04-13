@@ -1,6 +1,7 @@
 var should = require('should')
 var supertest = require('supertest')
 var App = require('..')
+var Router = App.createRouter
 
 describe('App', function() {
   var app
@@ -38,75 +39,8 @@ describe('App', function() {
     request().expect(500, /shit/, done)
   })
 
-  describe('.route()', function() {
-    function hello(req, send) {
-      var greeting = 'hello'
-      var whom = req.param('whom') || ''
-      if (whom) whom = ' ' + whom
-      send(greeting + whom)
-    }
 
-    function expect(body, done) {
-      request('/').expect(body, done)
-    }
-
-    function match(path) {
-      if (path == '/') return 'hello'
-    }
-
-    var opts = {
-      p: {
-        whom: 'world'
-      }
-    }
-
-    describe('Should accept route objects', function() {
-      it('route, task, def', function(done) {
-        app.route({
-          match: match
-        }, 'hello', hello)
-        expect('hello', done)
-      })
-
-      it('route', function(done) {
-        app.route({
-          match: match
-        }).def('hello', hello)
-        expect('hello', done)
-      })
-    })
-
-    describe('Should accept route functions', function() {
-      it('route, task, def', function(done) {
-        app.route(match, 'hello', hello)
-        expect('hello', done)
-      })
-
-      it('route', function(done) {
-        app.route(match).def('hello', hello)
-        expect('hello', done)
-      })
-    })
-
-    describe('Should accept regular route definitions', function() {
-      it('meth, path, task, def, opts', function(done) {
-        app.route('get', '/', 'hello', hello, opts)
-        expect('hello world', done)
-      })
-
-      it('meth, path, def, opts', function(done) {
-        app.route('get', '/', hello, opts)
-        expect('hello world', done)
-      })
-
-      it('meth, path, task, opts', function(done) {
-        app.route('get', '/', 'hello', opts).def('hello', hello)
-        expect('hello world', done)
-      })
-    })
-  })
-
-  describe('.at(path, ns, subapp | fn, aliases)', function() {
+  describe('.at(path, ns, subapp | subrouter, aliases)', function() {
     describe('When given a path not starting with /', function() {
       it('Should work like .at(layer)', function() {
         app.at('app', function(app) {
@@ -142,62 +76,27 @@ describe('App', function() {
       })
     })
 
-    describe('When given a function', function() {
-      it('Should install all routes at `path`', function(done) {
-        app.at('/foo', function(app) {
-          app.get('/bar', 'bar')
+    describe('When given a subrouter', function() {
+      it('Should install subrouter', function(done) {
+        var sub = Router(function(r) {
+          r.get('/world', 'world')
         })
-        app.def('bar', function(send) {
-          send('bar')
+        app.at('/hello', 'hello', sub)
+        app.def('hello_world', function(send) {
+          send('world')
         })
-        request('/foo/bar').expect(200, 'bar', function(err) {
-          if (err) return done(err)
-          request('/bar').expect(404, done)
-        })
+        request('/hello/world').expect('world', done)
       })
 
-      it('Should prefix all passed tasks with `ns`', function(done) {
-        app.at('/foo', 'foo', function(app) {
-          app.get('/bar', 'bar')
+      it('Should allow namespace omission', function(done) {
+        var sub = Router(function(r) {
+          r.get('/world', 'world')
         })
-        app.def('foo_bar', function(send) {
-          send('bar')
+        app.at('/hello', sub)
+        app.def('world', function(send) {
+          send('world')
         })
-        request('/foo/bar').expect(200, 'bar', done)
-      })
-
-      it('Should support inline task definition', function(done) {
-        app.at('/foo', 'foo', function(app) {
-          app.get('/bar', function(send) { // note we are in global namespace
-            send('bar')
-          })
-        })
-        request('/foo/bar').expect(200, 'bar', done)
-      })
-
-      describe('Should support nesting', function() {
-        it('subapp case', function(done) {
-          var sub = App()
-          sub.get('/qux', function(send) {
-            send('qux')
-          })
-          app.at('/foo', 'foo', function(app) {
-            app.at('/bar', 'bar', sub)
-          })
-          app.alias('foo_bar_res', 'res')
-          request('/foo/bar/qux').expect('qux', done)
-        })
-
-        it('function case', function(done) {
-          app.at('/foo', 'foo', function(app) {
-            app.at('/bar', 'bar', function(app) {
-              app.get('/qux', function(send) {
-                send('qux')
-              })
-            })
-          })
-          request('/foo/bar/qux').expect('qux', done)
-        })
+        request('/hello/world').expect('world', done)
       })
     })
   })
