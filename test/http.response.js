@@ -162,4 +162,70 @@ describe('http.Response', function () {
       })
     })
   })
+
+  describe('.cookie(name, val, opts)', function() {
+    it('Should set cookie', function(done) {
+      res.cookie('a', 'b')
+      request()
+      .get('/')
+      .end(function(err, res) {
+        if (err) return done(err)
+        res.headers['set-cookie'].should.eql(['a=b; Path=/'])
+        done()
+      })
+    })
+
+    it('Should respect passed options', function(done) {
+      res.cookie('a', 'b', {path: '/hello', httpOnly: true, secure: true})
+      request()
+      .get('/')
+      .end(function(err, res) {
+        if (err) return done(err)
+        res.headers['set-cookie']
+          .should.eql(['a=b; Path=/hello; HttpOnly; Secure'])
+        done()
+      })
+    })
+
+    it('Should allow multiple calls', function(done) {
+      res
+      .cookie('foo', 'bar')
+      .cookie('baz', 10)
+
+      request()
+      .get('/')
+      .end(function(err, res) {
+        if (err) return done(err)
+        res.headers['set-cookie']
+          .should.eql(['foo=bar; Path=/', 'baz=10; Path=/'])
+        done()
+      })
+    })
+  })
+
+  describe('.clearCookie(name, opts)', function() {
+    it('Should set an expired cookie', function(done) {
+      res.clearCookie('sid')
+      request()
+      .get('/')
+      .end(function(err, res) {
+        if (err) return done(err)
+        res.headers['set-cookie']
+          .should.eql(['sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT'])
+        done()
+      })
+    })
+
+    it('Should respect passed options', function(done) {
+      res.clearCookie('sid', {path: '/admin'})
+      request()
+      .get('/')
+      .end(function(err, res) {
+        if (err) return done(err)
+        res.headers['set-cookie']
+          .should.eql(['sid=; Path=/admin; Expires=Thu, 01 Jan 1970 00:00:00 GMT'])
+        done()
+      })
+    })
+  })
 })
