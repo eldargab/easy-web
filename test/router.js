@@ -154,4 +154,14 @@ describe('Router', function() {
       })
     })
   })
+
+  describe('.route()', function() {
+    it('Should accept functions', function() {
+      router.route(function(p, r) {
+        p.should.equal('/foo')
+        r.should.equal(req)
+        return 'func'
+      }).dispatch('/foo', req).should.equal('func')
+    })
+  })
 })
