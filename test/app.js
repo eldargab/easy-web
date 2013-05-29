@@ -40,7 +40,7 @@ describe('App', function() {
   })
 
 
-  describe('.at(path, ns, subapp | subrouter, aliases)', function() {
+  describe('.at(path, ns, subapp | subrouter | fn, aliases)', function() {
     describe('When given a path not starting with /', function() {
       it('Should work like .at(layer)', function() {
         app.at('app', function(app) {
@@ -97,6 +97,18 @@ describe('App', function() {
           send('world')
         })
         request('/hello/world').expect('world', done)
+      })
+    })
+
+    describe('When given a function', function() {
+      it('Should create subapp and setup it with the given function', function(done) {
+        app.at('/hello', function(hello) {
+          hello.get('/world', function(send) {
+            send('Hello world')
+          })
+          this.should.equal(hello)
+        })
+        request('/hello/world').expect('Hello world', done)
       })
     })
   })

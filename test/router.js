@@ -130,6 +130,15 @@ describe('Router', function() {
       })
     })
 
+    describe('Given a function instead of router...', function() {
+      it('Should create a new router and setup it with the given function', function() {
+        router.at('/hello', function(hello) {
+          hello.route({match: function() {return 'foo'}})
+          this.should.equal(hello)
+        }).dispatch('/hello/foo', req).should.equal('foo')
+      })
+    })
+
     it('Should ignore trailing slash in `prefix`', function() {
       router.at('/foo/bar/', Router().route({match: function() {return 'a'}}))
         .dispatch('/foo/bar', req).should.equal('a')
