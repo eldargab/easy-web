@@ -1,5 +1,6 @@
 var should = require('should')
 var supertest = require('supertest')
+var PassThrough = require('stream').PassThrough
 var App = require('..')
 var Router = App.createRouter
 
@@ -353,8 +354,38 @@ describe('App', function() {
         app.get('/', function(send) {
           send(new Buffer('hello'))
         })
-        request('/')
-          .expect('Content-Type', 'application/octet-stream', done)
+        request('/').expect('Content-Type', 'application/octet-stream', done)
+      })
+    })
+
+    describe('Given a stream body', function() {
+      it('Should default Content-Type to application/octet-stream', function(done) {
+        app.get('/', function(send) {
+          var stream = new PassThrough
+          send(stream)
+          stream.end('hello')
+        })
+        request('/').expect('Content-Type', 'application/octet-stream', done)
+      })
+
+      it('Should pass streaming errors to app.onerror()', function(done) {
+        var error = new Error
+        var errors = []
+
+        app.get('/', function(send) {
+          var stream = new PassThrough
+          send(stream)
+          stream.emit('error', error)
+        })
+
+        app.onerror = function(err) {
+          errors.push(err)
+        }
+
+        request('/').end(function() {
+          errors.should.eql([error])
+          done()
+        })
       })
     })
   })

@@ -162,15 +162,33 @@ describe('http.Response', function () {
     })
 
     it('Should destroy response on a streaming error', function(done) {
-      var req = request(function(req, res) {
+      request(function(req, res) {
         var stream = new PassThrough
         new Response(req, res).send(stream).end()
-        stream.on('error', function() {})
         stream.emit('error', new Error)
       })
       .get('/')
       .end(function(err) {
         should.exist(err)
+        done()
+      })
+    })
+
+    it('Should pass streaming error to callback', function(done) {
+      var error = new Error
+      var errors = []
+
+      request(function(req, res) {
+        var stream = new PassThrough
+        new Response(req, res).send(stream).end(function(err) {
+          errors.push(err)
+        })
+        stream.emit('error', error)
+      })
+      .get('/')
+      .end(function(err) {
+        should.exist(err)
+        errors.should.eql([error])
         done()
       })
     })
