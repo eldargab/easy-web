@@ -1,6 +1,6 @@
 var should = require('should')
 var supertest = require('supertest')
-var fs = require('fs')
+var PassThrough = require('stream').PassThrough
 var Response = require('../lib/http/response')
 
 describe('http.Response', function () {
@@ -33,16 +33,15 @@ describe('http.Response', function () {
     })
 
     it('Should accept streams', function (done) {
-      var stream = fs.createReadStream(__filename)
       request(function (req, res) {
+        var stream = new PassThrough
         new Response(req, res)
           .send(stream)
-          .end(function() {
-            stream.destroy()
-          })
+          .end()
+        stream.end('Hello world')
       })
       .get('/')
-      .expect(200, /Should accept streams/, done)
+      .expect(200, 'Hello world', done)
     })
   })
 
@@ -147,7 +146,7 @@ describe('http.Response', function () {
   describe('.end(cb)', function() {
     it('Should call passed callback when response were finished or closed', function (done) {
       var called = false
-      request(function (req, res) {
+      request(function(req, res) {
         new Response(req, res)
           .send('hi')
           .end(function() {
@@ -159,6 +158,20 @@ describe('http.Response', function () {
       .end(function (err) {
         called.should.be.true
         done(err)
+      })
+    })
+
+    it('Should destroy response on a streaming error', function(done) {
+      var req = request(function(req, res) {
+        var stream = new PassThrough
+        new Response(req, res).send(stream).end()
+        stream.on('error', function() {})
+        stream.emit('error', new Error)
+      })
+      .get('/')
+      .end(function(err) {
+        should.exist(err)
+        done()
       })
     })
   })
