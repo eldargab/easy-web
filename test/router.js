@@ -16,8 +16,14 @@ describe('Router', function() {
       router.dispatch('/', req).should.equal('first')
     })
 
-    it('Should return 404 if no route matched', function() {
-      router.dispatch('/', req).should.equal('404')
+    it('Should return "null" if no route matched', function() {
+      ;(router.dispatch('/', req) === null).should.be.true
+    })
+
+    it('Should stop matching if route returns "null"', function() {
+      router.route({match: function() {return null}})
+      router.route({match: function() {return 'a'}})
+      ;(router.dispatch('/', req) === null).should.be.true
     })
 
     it('Should pass `path` and `req` to route.match()', function() {
@@ -65,10 +71,26 @@ describe('Router', function() {
   describe('.at(prefix, [ns], router)', function() {
     describe('Should create a route which...', function() {
       describe('In a case of dispatching...', function() {
-        describe('Given a path starting with `prefix`...', function() {
+        describe('Given the path starting with `prefix`...', function() {
           it('Should return dispatch result from the `router`', function() {
             router.at('/hello', Router().route({match: function() {return 'a'}}))
               .dispatch('/hello', req).should.equal('a')
+          })
+
+          describe('Given the non root prefix', function() {
+            it('Should stop the matching even if there is no match', function() {
+              router.at('/hello', Router())
+              router.route({match: function() {return 'a'}})
+              should.not.exist(router.dispatch('/hello', req))
+            })
+          })
+
+          describe('Given the "/" prefix', function() {
+            it('Should not stop the matching even if there is no match', function() {
+              router.at('/', Router())
+              router.route({match: function() {return 'a'}})
+              router.dispatch('/', req).should.equal('a')
+            })
           })
 
           it('Should pass to the `router` trimed path without prefix', function() {
@@ -82,23 +104,10 @@ describe('Router', function() {
               .dispatch('/hello/foo').should.equal('foo')
           })
 
-          describe('Given a "/" prefix', function() {
-            it('Should not match if the `router` returns 404', function() {
-              router.at('/', Router())
-              router.route({match: function() {return 'a'}})
-              router.dispatch('/', req).should.equal('a')
-            })
-          })
-
-          describe('Given a namespace...', function() {
+          describe('Given the namespace...', function() {
             it('Should return result prefixed with `ns`', function() {
               router.at('/hello', 'hello', Router().route({match: function() {return 'a'}}))
                 .dispatch('/hello/world', req).should.equal('hello_a')
-            })
-
-            it('But should not prefix 404 task', function() {
-              router.at('/hello', 'hello', Router())
-                .dispatch('/hello/world', req).should.equal('404')
             })
           })
         })
