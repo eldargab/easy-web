@@ -145,4 +145,23 @@ describe('http.request', function() {
       .expect(200, done)
     })
   })
+
+  describe('.xhr', function() {
+    it('Should return "true" if request is XMLHttpRequest', function(done) {
+      request(function(req, res) {
+        req.xhr.should.be.true
+        res.end()
+      })
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .expect(200, done)
+    })
+
+    it('Should return "false" otherwise', function(done) {
+      request(function(req, res) {
+        req.xhr.should.be.false
+        res.end()
+      })
+      .expect(200, done)
+    })
+  })
 })
