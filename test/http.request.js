@@ -10,11 +10,21 @@ function request(cb) {
 }
 
 describe('http.request', function() {
-  describe('.receiveBody([encoding], [limit], cb)', function() {
+  describe('.body()', function() {
+    describe('Given no arguments', function() {
+      it('Should return min-stream source', function(done) {
+        request(function(req, res) {
+          res.send(req.body()).end()
+        })
+        .send('echo')
+        .expect(200, 'echo', done)
+      })
+    })
+
     describe('Given encoding', function() {
       it('Should decode body according to passed encoding', function(done) {
         var test = request(function(req, res) {
-          req.receiveBody('base64', function(err, body) {
+          req.body('base64', function(err, body) {
             body.should.equal('AQI=')
             res.end()
           })
@@ -27,7 +37,7 @@ describe('http.request', function() {
     describe('Given no encoding', function() {
       it('Should default encoding to UTF-8', function(done) {
         request(function(req, res) {
-          req.receiveBody(function(err, body) {
+          req.body(function(err, body) {
             body.should.equal('раз два три')
             res.end()
           })
@@ -40,7 +50,7 @@ describe('http.request', function() {
     describe('Given a binary encoding (bin)', function() {
       it('Should return a raw buffer', function(done) {
         var test = request(function(req, res) {
-          req.receiveBody('bin', function(err, body) {
+          req.body('bin', function(err, body) {
             Buffer.isBuffer(body).should.be.true
             body[0].should.equal(1)
             body[1].should.equal(2)
@@ -56,7 +66,7 @@ describe('http.request', function() {
       describe('Should reject large bodies', function() {
         it('Explicit Content-Length case', function(done) {
           request(function(req, res) {
-            req.receiveBody(10, function(err, body) {
+            req.body(10, function(err, body) {
               should.not.exist(body)
               err.message.should.equal('Request body is too large.')
               err.limit.should.equal(10)
@@ -70,7 +80,7 @@ describe('http.request', function() {
         it('No Content-Length case', function(done) {
           var test = request(function(req, res) {
             req.headers.should.not.have.property('content-length')
-            req.receiveBody(10, function(err, body) {
+            req.body(10, function(err, body) {
               should.not.exist(body)
               err.message.should.equal('Request body is too large.')
               err.limit.should.equal(10)
@@ -88,7 +98,7 @@ describe('http.request', function() {
 
       it('Should accept small bodies', function(done) {
         request(function(req, res) {
-          req.receiveBody(6, function(err, body) {
+          req.body(6, function(err, body) {
             body.should.equal('small')
             res.end()
           })
@@ -101,7 +111,7 @@ describe('http.request', function() {
     it('Should set .bodyConsumed flag', function(done) {
       request(function(req, res) {
         req.bodyConsumed.should.be.false
-        req.receiveBody(function() {
+        req.body(function() {
           req.bodyConsumed.should.be.true
           res.end()
         })
@@ -113,11 +123,11 @@ describe('http.request', function() {
 
     it('Should reject attempt to consume body second time', function(done) {
       request(function(req, res) {
-        req.bodyConsumed = true
-        req.receiveBody(function(err) {
-          err.message.should.equal('Body already consumed.')
-          res.end()
-        })
+        req.body()
+        ;(function() {
+          req.body()
+        }).should.throw('Body already consumed')
+        res.end()
       })
       .send('hi')
       .expect(200, done)
