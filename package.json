@@ -13,7 +13,8 @@
     "methods": "*",
     "mime": "*",
     "qs": "*",
-    "cookie": "*"
+    "cookie": "*",
+    "min-stream-node": "~0.1.0"
   },
   "devDependencies": {
     "mocha": "*",

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 bench() {
-  wrk -t4 -c30 -r50000 http://127.0.0.1:8000$1 \
+  wrk -t4 -c30 -d5s http://127.0.0.1:8000$1 \
     | grep "Requests/sec" \
     | cut -d ':' -f 2 \
     | xargs echo "$2:"

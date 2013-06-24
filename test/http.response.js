@@ -1,6 +1,5 @@
 var should = require('should')
 var supertest = require('supertest')
-var PassThrough = require('stream').PassThrough
 var Response = require('../lib/http/response')
 
 describe('http.Response', function () {
@@ -32,13 +31,16 @@ describe('http.Response', function () {
         .expect(200, 'hi', done)
     })
 
-    it('Should accept streams', function (done) {
+    it('Should accept min-streams', function (done) {
       request(function (req, res) {
-        var stream = new PassThrough
+        var sent = false
         new Response(req, res)
-          .send(stream)
-          .end()
-        stream.end('Hello world')
+        .send(function(close, cb) {
+          if (sent) return process.nextTick(cb)
+          sent = true
+          cb(null, 'Hello world')
+        })
+        .end()
       })
       .get('/')
       .expect(200, 'Hello world', done)
@@ -60,14 +62,20 @@ describe('http.Response', function () {
     })
   })
 
-  it('Should default Content-Type to application/octet-stream', function(done) {
-    res.send('hello')
-    request().get('/')
-      .expect('Content-Type', 'application/octet-stream', done)
-  })
+  describe('Content-Type', function() {
+    it('Should default to text/plain for strings', function(done) {
+      res.send('hello')
+      request().get('/')
+        .expect('Content-Type', 'text/plain; charset=UTF-8', done)
+    })
 
-  describe('Given explicitly set Content-Type', function() {
-    it('Should not override it', function(done) {
+    it('Should default to application/octet-stream otherwise', function(done) {
+      res.send(new Buffer('Hello'))
+      request().get('/')
+        .expect('Content-Type', 'application/octet-stream', done)
+    })
+
+    it('Should not override explicitly set Content-Type', function(done) {
       request(function (req, res) {
         new Response(req, res)
           .type('foo/bar')
@@ -122,68 +130,61 @@ describe('http.Response', function () {
     })
   })
 
-  it('Should respond with 304 when fresh', function (done) {
-    res.set('ETag', 'hello')
-    request()
-      .get('/')
-      .set('If-None-Match', 'hello')
-      .expect(304, done)
-  })
-
-  it('Should not check for freshness unless 2xx or 303', function (done) {
-    request(function (req, res) {
-      new Response(req, res)
-        .status(400)
-        .set('Etag', 'asd')
-        .send('hi')
-        .end()
+  describe('Freshness checking', function() {
+    it('Should respond with 304 when fresh', function (done) {
+      res.set('ETag', 'hello')
+      request()
+        .get('/')
+        .set('If-None-Match', 'hello')
+        .expect(304, done)
     })
-    .get('/')
-    .set('If-None-Match', 'asd')
-    .expect(400, 'hi', done)
+
+    it('Should not check for freshness unless 2xx or 303', function (done) {
+      request(function (req, res) {
+        new Response(req, res)
+          .status(400)
+          .set('Etag', 'asd')
+          .send('hi')
+          .end()
+      })
+      .get('/')
+      .set('If-None-Match', 'asd')
+      .expect(400, 'hi', done)
+    })
   })
 
-  describe('.end(cb)', function() {
-    it('Should call passed callback when response were finished or closed', function (done) {
-      var called = false
+  describe('Streaming', function() {
+    it('Should destroy response on upstream error', function(done) {
       request(function(req, res) {
         new Response(req, res)
-          .send('hi')
-          .end(function() {
-            called = true
+        .send(function(close, cb) {
+          process.nextTick(function() {
+            cb(new Error)
           })
+        })
+        .end()
       })
       .get('/')
-      .expect(200, 'hi')
-      .end(function (err) {
-        called.should.be.true
-        done(err)
-      })
-    })
-
-    it('Should destroy response on a streaming error', function(done) {
-      request(function(req, res) {
-        var stream = new PassThrough
-        new Response(req, res).send(stream).end()
-        stream.emit('error', new Error)
-      })
-      .get('/')
-      .end(function(err) {
+      .end(function(err, res) {
         should.exist(err)
         done()
       })
     })
 
-    it('Should pass streaming error to callback', function(done) {
+    it('Should pass upstream error to callback', function(done) {
       var error = new Error
       var errors = []
 
       request(function(req, res) {
-        var stream = new PassThrough
-        new Response(req, res).send(stream).end(function(err) {
+        new Response(req, res)
+        .send(function(close, cb) {
+          process.nextTick(function() {
+            cb(error)
+          })
+        })
+        .end(function(err) {
           errors.push(err)
         })
-        stream.emit('error', error)
       })
       .get('/')
       .end(function(err) {

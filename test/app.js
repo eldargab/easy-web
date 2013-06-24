@@ -1,6 +1,5 @@
 var should = require('should')
 var supertest = require('supertest')
-var PassThrough = require('stream').PassThrough
 var App = require('..')
 var Router = App.createRouter
 
@@ -193,38 +192,12 @@ describe('App', function() {
       })
     })
 
-    describe('send(code, cb)', function() {
-      it('Should set status and delegate response to callback', function(done) {
-        app.get('/', function(send) {
-          send(302, function(res) {
-            res.statusCode.should.equal(302)
-            res.send('redirect')
-            res.end()
-          })
-        })
-        request('/').expect(302, 'redirect', done)
-      })
-    })
-
     describe('send(body)', function() {
       it('Should send `body`', function(done) {
         app.get('/', function(send) {
           send('hello')
         })
         request('/').expect(200, 'hello', done)
-      })
-    })
-
-    describe('send(body, cb)', function() {
-      it('Should set body and delegate response to callback', function(done) {
-        app.get('/', function(send) {
-          send('hello', function(res) {
-            res.body.should.equal('hello')
-            res.send('foo')
-            res.end()
-          })
-        })
-        request('/').expect('foo', done)
       })
     })
 
@@ -237,45 +210,14 @@ describe('App', function() {
       })
     })
 
-    describe('send(status, body, cb)', function() {
-      it('Should set status, body and delegate response to callback', function(done) {
-        app.get('/', function(send) {
-          send(201, 'hello', function(res) {
-            res.statusCode.should.equal(201)
-            res.body.should.equal('hello')
-            res.send('foo')
-            res.end()
-          })
-        })
-        request('/').expect(201, 'foo', done)
-      })
-    })
-
     describe('send(status, type, body)', function() {
       it('Should set status, Content-Type and send body', function(done) {
         app.get('/', function(send) {
-          send(201, 'foo/bar', 'hello')
+          send(201, 'foo/bar', null)
         })
         request('/')
           .expect('Content-Type', 'foo/bar')
-          .expect(201, 'hello', done)
-      })
-    })
-
-    describe('send(status, type, body, cb)', function() {
-      it('Should set status, Content-Type, body and delegate response to callback', function(done) {
-        app.get('/', function(send) {
-          send(201, 'foo/bar','hello', function(res) {
-            res.statusCode.should.equal(201)
-            res.body.should.equal('hello')
-            res.type().should.equal('foo/bar')
-            res.send('foo')
-            res.end()
-          })
-        })
-        request('/')
-          .expect('Content-Type', 'foo/bar')
-          .expect(201, 'foo', done)
+          .expect(201, done)
       })
     })
 
@@ -290,20 +232,13 @@ describe('App', function() {
       })
     })
 
-    describe('send(type, body, cb)', function() {
-      it('Should set Content-Type, body and delegate response to callback', function(done) {
-        app.get('/', function(send) {
-          send('foo/bar','hello', function(res) {
-            res.body.should.equal('hello')
-            res.type().should.equal('foo/bar')
-            res.send('foo')
-            res.end()
-          })
-        })
-        request('/')
-          .expect('Content-Type', 'foo/bar')
-          .expect(200, 'foo', done)
+    it('Should support progressive setup', function(done) {
+      app.get('/', function(send) {
+        send('ok').set('hello', 'world').end()
       })
+      request('/')
+        .expect('hello', 'world')
+        .expect('ok', done)
     })
 
     describe('Given a json body', function() {
@@ -339,43 +274,17 @@ describe('App', function() {
       })
     })
 
-    describe('Given a string body', function() {
-      it('Should default Content-Type to text/html', function(done) {
-        app.get('/', function(send) {
-          send('hello')
-        })
-        request('/')
-          .expect('Content-Type', 'text/html; charset=UTF-8', done)
-      })
-    })
-
-    describe('Given a buffer body', function() {
-      it('Should default Content-Type to application/octet-stream', function(done) {
-        app.get('/', function(send) {
-          send(new Buffer('hello'))
-        })
-        request('/').expect('Content-Type', 'application/octet-stream', done)
-      })
-    })
-
     describe('Given a stream body', function() {
-      it('Should default Content-Type to application/octet-stream', function(done) {
-        app.get('/', function(send) {
-          var stream = new PassThrough
-          send(stream)
-          stream.end('hello')
-        })
-        request('/').expect('Content-Type', 'application/octet-stream', done)
-      })
-
       it('Should pass streaming errors to app.onerror()', function(done) {
         var error = new Error
         var errors = []
 
         app.get('/', function(send) {
-          var stream = new PassThrough
-          send(stream)
-          stream.emit('error', error)
+          send(function(close, cb) {
+            process.nextTick(function() {
+              cb(error)
+            })
+          })
         })
 
         app.onerror = function(err) {
@@ -415,23 +324,6 @@ describe('App', function() {
       })
     })
 
-    describe('redirect(url, cb)', function() {
-      it('Should prepare response for redirection and delegate it to callback', function(done) {
-        app.get('/', function(redirect) {
-          redirect('http://example.com/', function(res) {
-            res.statusCode.should.equal(302)
-            res.get('Location').should.equal('http://example.com/')
-            res.send('foo')
-            res.end()
-          })
-        })
-        request('/')
-          .expect(302)
-          .expect('Location', 'http://example.com/')
-          .expect('foo', done)
-      })
-    })
-
     describe('redirect(status, url)', function() {
       it('Should redirect with passed status', function(done) {
         app.get('/', function(redirect) {
@@ -443,21 +335,11 @@ describe('App', function() {
       })
     })
 
-    describe('redirect(status, url, cb)', function() {
-      it('Should prepare response for redirection and delegate it to callback', function(done) {
-        app.get('/', function(redirect) {
-          redirect(303, 'http://example.com/', function(res) {
-            res.statusCode.should.equal(303)
-            res.get('Location').should.equal('http://example.com/')
-            res.send('foo')
-            res.end()
-          })
-        })
-        request('/')
-          .expect(303)
-          .expect('Location', 'http://example.com/')
-          .expect('foo', done)
+    it('Should support progressive setup', function(done) {
+      app.get('/', function(redirect) {
+        redirect('/foo').status(303).end()
       })
+      request('/').expect(303, done)
     })
   })
 })
