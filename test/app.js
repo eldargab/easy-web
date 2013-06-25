@@ -281,9 +281,7 @@ describe('App', function() {
 
         app.get('/', function(send) {
           send(function(close, cb) {
-            process.nextTick(function() {
-              cb(error)
-            })
+            cb(error)
           })
         })
 
