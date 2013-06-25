@@ -14,7 +14,7 @@
     "mime": "*",
     "qs": "*",
     "cookie": "*",
-    "min-stream-node": "~0.1.0"
+    "min-stream-node": "eldargab/min-stream-node"
   },
   "devDependencies": {
     "mocha": "*",
