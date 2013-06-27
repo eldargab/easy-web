@@ -134,6 +134,18 @@ describe('http.request', function() {
     })
   })
 
+  describe('.query', function() {
+    it('Should return parsed query object', function(done) {
+      var q = {a: 'b', c: 'привет?', }
+      request(function(req, res) {
+        req.query.should.eql(q)
+        res.end()
+      })
+      .query(q)
+      .expect(200, done)
+    })
+  })
+
   describe('.cookies', function() {
     it('Should return parsed cookies', function(done) {
       request(function(req, res) {
