@@ -248,7 +248,7 @@ describe('App', function() {
         })
         request('/')
           .expect(200)
-          .expect('Content-Type', 'application/json')
+          .expect('Content-Type', 'application/json; charset=UTF-8')
           .expect({foo: 'bar'}, done)
       })
 
