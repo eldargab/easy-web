@@ -12,7 +12,6 @@
     "fresh": "*",
     "methods": "*",
     "mime": "*",
-    "qs": "*",
     "cookie": "*",
     "min-stream-node": "eldargab/min-stream-node"
   },

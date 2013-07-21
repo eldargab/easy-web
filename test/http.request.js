@@ -135,13 +135,12 @@ describe('http.request', function() {
   })
 
   describe('.query', function() {
-    it('Should return parsed query object', function(done) {
-      var q = {a: 'b', c: 'привет?', }
+    it('Should return query part of the url without leading "?"', function(done) {
       request(function(req, res) {
-        req.query.should.eql(q)
+        req.query.should.eql('a=a&b=b')
         res.end()
       })
-      .query(q)
+      .query('a=a&b=b')
       .expect(200, done)
     })
   })
