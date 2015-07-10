@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "easy-app": "eldargab/easy-app",
+    "easy-streaming": "eldargab/easy-streaming",
+    "go-async": "eldargab/go-async",
     "escape-regexp": "0.0.1",
     "fresh": "^0.3.0",
     "methods": "^1.1.1"
