@@ -1,5 +1,5 @@
 const web = require('../lib')
-const app = new web.App
+const app = web.main()
 
 app.get('/', function() {
   return {body: 'Hello world'}
