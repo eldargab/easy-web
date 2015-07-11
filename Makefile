@@ -1,7 +1,7 @@
 test:
-	@mocha
+	@./node_modules/.bin/mocha
 
 bench:
-	@bench/run
+	@./bench/run
 
 .PHONY: test bench

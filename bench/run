@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 bench() {
-  wrk -t4 -c30 -d5s http://127.0.0.1:8000$1 \
+  wrk -t4 -c20 -d5s http://127.0.0.1:8000$1 \
     | grep "Requests/sec" \
     | cut -d ':' -f 2 \
-    | xargs echo "$2:"
+    | xargs echo "${@:2}:"
 }
 
 with() {
@@ -13,31 +13,15 @@ with() {
   sleep .2
   $2
   kill $pid
-  sleep .2
+  wait $pid 2>/dev/null
 }
 
 echo
-echo EasyWeb
+echo Hello world servers
 echo
 
-easy_web() {
-  bench / "Hello world"
-  bench /just-set-immediate "Just setImmediate()"
-  bench /one-async-task "One async task"
-  bench /async-computation "Async computation"
-  bench /sync-computation "Sync computation"
-  bench /subapp/hello "Subapp"
-}
-
-with easy-web.js easy_web
-
-echo
-echo Other Hello world servers
-echo
-
+with easy-web.js "bench / EasyWeb"
 with node.js "bench / Node.js"
-with pure-http.js "bench / Http"
-with express.js "bench / Express"
+with koa.js "bench / Koa"
 
 echo
-

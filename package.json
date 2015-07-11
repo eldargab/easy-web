@@ -14,7 +14,9 @@
     "fresh": "^0.3.0",
     "methods": "^1.1.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "koa": "^0.21.0"
+  },
   "scripts": {
     "test": "mocha"
   }
