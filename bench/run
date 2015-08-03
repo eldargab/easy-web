@@ -10,7 +10,7 @@ bench() {
 with() {
   node ./bench/$1 &
   local pid=$!
-  sleep .2
+  sleep .5
   $2
   kill $pid
   wait $pid 2>/dev/null
