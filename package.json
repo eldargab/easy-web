@@ -1,24 +1,27 @@
 {
   "name": "easy-web",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha",
   "author": "Eldar Gabdullin <eldargab@gmail.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git://github.com/eldargab/easy-web"
   },
   "dependencies": {
-    "easy-app": "eldargab/easy-app",
-    "easy-streaming": "eldargab/easy-streaming",
-    "go-async": "eldargab/go-async",
+    "content-type": "^1.0.4",
+    "easy-app": "^1.0.0-alpha.1",
+    "encodeurl": "^1.0.2",
     "escape-regexp": "0.0.1",
-    "fresh": "^0.3.0",
-    "methods": "^1.1.1"
+    "go-async": "^1.0.0",
+    "iconv-lite": "^0.4.23",
+    "lodash.clonedeep": "^4.5.0",
+    "methods": "^1.1.2",
+    "statuses": "^1.5.0"
   },
   "devDependencies": {
-    "koa": "^0.21.0",
-    "mocha": "^2.2.5",
-    "should": "^7.0.2",
-    "supertest": "^1.0.1"
+    "mocha": "^5.2.0",
+    "should": "^13.2.1",
+    "supertest": "^3.1.0"
   },
   "scripts": {
     "test": "mocha"

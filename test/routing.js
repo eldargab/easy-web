@@ -1,57 +1,57 @@
 'use strict'
 
 const should = require('should')
-const web = require('../lib')
+const Web = require('../lib/web')
+const Router = require('../lib/router')
+
 
 describe('Routing', function() {
-  let app, router, route
+  let app
 
   beforeEach(function() {
-    app = new web.App
-    router = new web.Router(app.routes)
+    app = new Web
   })
 
-  function dispatch(method, path) {
-    router.routes = app.routes
-    return route = router.dispatch(path, {method: method})
+  function match(path, name, params) {
+    let route = new Router(app.routes).match(path)
+    if (name) {
+      should.exist(route)
+      route.should.have.property('name').equal(name)
+      route.should.have.property('params').eql(params)
+    } else {
+      should.not.exist(route)
+    }
   }
 
-  it('Route', function() {
-    app.get('/', 'a')
-    app.get('/foo/bar', 'b')
-    app.post('/foo/bar', 'c')
-    app.get('/foo/{bar}/{baz}', 'd')
+  it('test matching', function() {
+    app.route('GET', '/', 'root')
+    app.route('GET', '/{foo}', 'foo')
+    app.route('GET', '/foo/bar', 'bar')
+    app.route('GET', '/foo/baz', 'baz')
+    app.route('GET', '/{a}/{b}', 'ab')
 
-    dispatch('GET', '/').should.have.property('name').equal('a')
-    dispatch('GET', '/foo/bar').should.have.property('name').equal('b')
-    dispatch('GET', '/foo/bar/').should.have.property('name').equal('b')
-    dispatch('POST', '/foo/bar').should.have.property('name').equal('c')
-    dispatch('GET', '/foo/bar/baz').should.have.property('name').equal('d')
-    route.params.should.eql({bar: 'bar', baz: 'baz'})
+    match('/foo/bar', 'bar', {})
+    match('/foo/bar/', 'bar', {})
+    match('/foo/qux', 'ab', {a: 'foo', b: 'qux'})
+    match('/', 'root', {})
+    match('/foo', 'foo', {foo: 'foo'})
   })
 
-  describe('Zone', function() {
-    it('When entered, should match even if nothing matches within zone', function() {
-      app.at('/foo', function(app) {
-        app.get('/', 'a')
-      })
-      app.get('/foo/bar', 'b')
-      dispatch('GET', '/foo/bar').should.not.have.property('name')
-    })
+  it('test sub-app routing', function() {
+    let sub = new Web
 
-    it('Should prefix names with given namespace', function() {
-      app.at('/foo', 'foo', function(app) {
-        app.get('/bar', 'bar')
-      })
-      dispatch('GET', '/foo/bar').should.have.property('name').equal('foo_bar')
-    })
+    sub.route('GET', '/', 'root')
+    sub.route('GET', '/foo', 'foo')
+    sub.route('GET', '/{bar}', 'bar')
 
-    it('zone /bar should not match /barbaz', function() {
-      app.at('/bar', function(app) {
-        app.get('/', 'a')
-      })
-      app.get('/barbaz', 'b')
-      dispatch('GET', '/barbaz').should.have.property('name').equal('b')
-    })
+    app.at('/sub', 'sub_ns', sub)
+    app.route('GET', '/subfoo', 'subfoo')
+    app.route('GET', '/sub/foo', 'foo')
+
+    match('/sub/qux', 'sub_ns_bar', {bar: 'qux'})
+    match('/sub', 'sub_ns_root', {})
+    match('/sub/', 'sub_ns_root', {})
+    match('/sub/foo', 'sub_ns_foo', {})
+    match('/subfoo', 'subfoo', {})
   })
 })
