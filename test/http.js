@@ -57,6 +57,23 @@ describe('Http', function() {
   })
 
 
+  it('should return 405 on wrong method', function(done) {
+    app.route('GET', '/', 'foo')
+    app.def('foo', function() {
+      throw new Error('Should not be called!')
+    })
+
+    app.def('test', function(request) {
+      return request.post('/').send('hello')
+        .expect(405)
+        .expect('Allow', 'GET, HEAD')
+        .then(() => 1)
+    })
+
+    app.expect(1, done)
+  })
+
+
   it('should return 500 on unhandled error', function(done) {
     app.route('GET', '/', 'exception')
     app.def('exception', function() {
