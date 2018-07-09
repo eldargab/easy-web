@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "content-type": "^1.0.4",
-    "easy-app": "^1.0.0-alpha.1",
+    "easy-app": "^1.0.0-alpha.2",
     "encodeurl": "^1.0.2",
     "escape-regexp": "0.0.1",
-    "go-async": "^1.0.0",
+    "go-async": "^1.1.0",
     "iconv-lite": "^0.4.23",
     "lodash.clonedeep": "^4.5.0",
     "methods": "^1.1.2",
