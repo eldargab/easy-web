@@ -16,6 +16,8 @@
     "iconv-lite": "^0.4.23",
     "lodash.clonedeep": "^4.5.0",
     "methods": "^1.1.2",
+    "mime-types": "^2.1.18",
+    "range-parser": "^1.2.0",
     "statuses": "^1.5.0"
   },
   "devDependencies": {

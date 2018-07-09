@@ -82,4 +82,24 @@ describe('Http', function() {
     })
     app.expect(1, done)
   })
+
+
+  describe('sendFile()', function() {
+    it('basic usage', function(done) {
+      app.route('GET', '/', 'file')
+      app.def('file', function(sendFile) {
+        return sendFile(400, __filename)
+      })
+
+      app.def('test', function(request) {
+        return request.get('/')
+          .expect(400)
+          .expect('Content-Type', 'application/javascript')
+          .expect(/describe\('sendFile/)
+          .then(() => 1)
+      })
+
+      app.expect(1, done)
+    })
+  })
 })
