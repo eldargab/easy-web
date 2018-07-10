@@ -5,6 +5,7 @@ const supertest = require('supertest')
 const Web = require('../lib/web')
 const fileResource = require('../lib/http-file-resource')
 const fs = require('fs')
+const go = require('go-async')
 
 
 describe('Http', function() {
@@ -15,7 +16,7 @@ describe('Http', function() {
 
     app.def('request', function(requestHandler) {
       return supertest(function(req, res) {
-        requestHandler(req, res).get(function(err) {
+        go(requestHandler, req, res).get(function(err) {
           if (err) throw err
         })
       })
