@@ -1,4 +1,4 @@
-const Web = require('..')
+const Web = require('../..')
 const app = new Web
 
 

@@ -1,20 +1,26 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 bench() {
-  wrk -t4 -c20 -d5s http://127.0.0.1:8000$1 \
-    | grep "Requests/sec" \
-    | cut -d ':' -f 2 \
-    | xargs echo "${@:2}:"
+    wrk -t4 -c20 -d5s http://127.0.0.1:8000$1 \
+        | grep "Requests/sec" \
+        | cut -d ':' -f 2 \
+        | xargs echo
 }
 
 
 with() {
-  node ./bench/$1 &
-  local pid=$!
-  sleep .5
-  $2
-  kill $pid
-  wait $pid 2>/dev/null
+    node ./bench/$1 > /dev/null 2>&1 &
+    local pid=$!
+    sleep .5
+    if ! kill -s 0 $pid > /dev/null 2>&1; then
+        echo "$2" ":" "Not available"
+    else
+        local name=$2
+        shift; shift
+        echo "$name" ":" $($@)
+        kill $pid
+        wait $pid 2>/dev/null
+    fi
 }
 
 
@@ -22,9 +28,9 @@ echo
 echo Hello world servers
 echo
 
-with easy-web.js "bench / EasyWeb"
-with node.js     "bench / Node"
-with koa.js     "bench / Koa"
-with express.js  "bench / Express"
+with hello/easy-web.js "EasyWeb" bench /
+with hello/node.js     "Node   " bench /
+with hello/koa.js      "Koa    " bench /
+with hello/express.js  "Express" bench /
 
 echo
