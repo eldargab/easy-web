@@ -106,6 +106,21 @@ describe('Http', function() {
   })
 
 
+  it('stringBody', function(done) {
+    app.route('POST', '/', 'echo')
+    app.def('echo', function(stringBody, send) {
+      return send(200, 'text/plain', stringBody)
+    })
+
+    app.def('test', function(request) {
+      return request.post('/').send('Hello')
+        .expect(200, 'Hello')
+        .then(() => 1)
+    })
+    app.expect(1, done)
+  })
+
+
   describe('sendFile()', function() {
     it('basic usage', function(done) {
       app.route('GET', '/', 'file')
