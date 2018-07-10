@@ -1,8 +1,10 @@
-var koa = require('koa');
-var app = koa();
+const Koa = require('koa')
+const app = new Koa()
 
-app.use(function*(){
-  this.body = 'Hello World';
-});
 
-app.listen(8000);
+app.use(async function(ctx){
+  ctx.body = 'Hello World'
+})
+
+
+app.listen(8000)

@@ -1,10 +1,14 @@
-const web = require('../lib')
-const app = web.main()
+const Web = require('..')
+const app = new Web
 
-app.get('/', function() {
-  return {body: 'Hello world'}
+
+app.route('GET', '/', 'hello')
+app.def('hello', function(send) {
+  return send(200, 'text/plain', 'Hello world')
 })
 
-app.set('port', 8000)
 
-app.run()
+app.set('PORT', 8000)
+app.run('listen').get(function(err) {
+  if (err) throw err
+})

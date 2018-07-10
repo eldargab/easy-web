@@ -7,6 +7,7 @@ bench() {
     | xargs echo "${@:2}:"
 }
 
+
 with() {
   node ./bench/$1 &
   local pid=$!
@@ -16,12 +17,14 @@ with() {
   wait $pid 2>/dev/null
 }
 
+
 echo
 echo Hello world servers
 echo
 
 with easy-web.js "bench / EasyWeb"
-with node.js "bench / Node.js"
-with koa.js "bench / Koa"
+with node.js     "bench / Node"
+with koa.js     "bench / Koa"
+with express.js  "bench / Express"
 
 echo
