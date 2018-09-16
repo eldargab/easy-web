@@ -29,12 +29,14 @@ describe('Routing', function() {
     app.route('GET', '/foo/bar', 'bar')
     app.route('GET', '/foo/baz', 'baz')
     app.route('GET', '/{a}/{b}', 'ab')
+    app.route('GET', '/x/y/z/*', 'star')
 
     match('/foo/bar', 'bar', {})
     match('/foo/bar/', 'bar', {})
     match('/foo/qux', 'ab', {a: 'foo', b: 'qux'})
     match('/', 'root', {})
     match('/foo', 'foo', {foo: 'foo'})
+    match('/x/y/z/a/b/c', 'star', {'*': 'a/b/c'})
   })
 
   it('test sub-app routing', function() {
