@@ -151,7 +151,7 @@ describe('Http', function() {
 
       app.set('file_file', __filename)
 
-      app.route('GET', '/', 'file_sending')
+      app.route('GET', '/', 'file_sendResource')
     })
 
 
