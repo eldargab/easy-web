@@ -56,4 +56,18 @@ describe('Routing', function() {
     match('/sub/foo', 'sub_ns_foo', {})
     match('/subfoo', 'subfoo', {})
   })
+
+  it('test url generation', function() {
+    app.route('GET', '/foo/bar', 'bar')
+    app.route('GET', '/{a}/{b}', 'ab')
+    app.route('GET', '/x/y/z/*', 'star')
+    app.route('GET', '/x/{y}/z', 'xyz')
+
+    let r = new Router(app.routes)
+
+    r.path('ab', {a: 1, b: 2}).should.equal('/1/2')
+    r.path('bar', {}).should.equal('/foo/bar')
+    r.path('star', {'*': 'bar/baz'}).should.equal('/x/y/z/bar/baz')
+    r.path('xyz', {y: 10}).should.equal('/x/10/z')
+  });
 })
